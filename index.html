@@ -19,6 +19,8 @@
         .finance-card:hover { transform: translateY(-4px); box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1); }
         .win-badge { background-color: #dcfce7; color: #166534; padding: 2px 10px; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; }
         .loss-badge { background-color: #fee2e2; color: #991b1b; padding: 2px 10px; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; }
+        .type-btn { transition: all 0.1s ease; }
+        .type-btn.active { background-color: #3b82f6; color: white; border-color: #3b82f6; }
     </style>
 </head>
 <body class="bg-slate-950 text-slate-100">
@@ -184,7 +186,7 @@
                             <div class="grid grid-cols-2 gap-4">
                                 <div>
                                     <label class="text-sm text-slate-400 block mb-1">股票代碼</label>
-                                    <input type="text" id="stock-symbol" placeholder="SPY" class="w-full px-4 py-3 bg-slate-800 border border-slate-600 rounded-2xl text-lg font-mono">
+                                    <input type="text" id="stock-symbol" placeholder="2330" class="w-full px-4 py-3 bg-slate-800 border border-slate-600 rounded-2xl text-lg font-mono">
                                 </div>
                                 <div>
                                     <label class="text-sm text-slate-400 block mb-1">交易日期</label>
@@ -205,6 +207,28 @@
                                 <div>
                                     <label class="text-sm text-slate-400 block mb-1">風險回報比 (R)</label>
                                     <input type="text" id="risk-reward" placeholder="例如：1:2" class="w-full px-4 py-3 bg-slate-800 border border-slate-600 rounded-2xl text-lg font-semibold">
+                                </div>
+                            </div>
+                            
+                            <!-- Trade Type Buttons -->
+                            <div>
+                                <label class="text-sm text-slate-400 block mb-2">交易類型</label>
+                                <div class="flex gap-2">
+                                    <button type="button" onclick="selectTradeType('short')" id="type-short"
+                                            class="type-btn flex-1 px-4 py-2.5 border-2 border-slate-600 rounded-2xl text-sm font-semibold flex items-center justify-center gap-x-1.5">
+                                        <i class="fa-solid fa-arrow-trend-down"></i>
+                                        <span>Shorts</span>
+                                    </button>
+                                    <button type="button" onclick="selectTradeType('long')" id="type-long"
+                                            class="type-btn flex-1 px-4 py-2.5 border-2 border-slate-600 rounded-2xl text-sm font-semibold flex items-center justify-center gap-x-1.5 active">
+                                        <i class="fa-solid fa-arrow-trend-up"></i>
+                                        <span>Long</span>
+                                    </button>
+                                    <button type="button" onclick="selectTradeType('daytrade')" id="type-daytrade"
+                                            class="type-btn flex-1 px-4 py-2.5 border-2 border-slate-600 rounded-2xl text-sm font-semibold flex items-center justify-center gap-x-1.5">
+                                        <i class="fa-solid fa-clock"></i>
+                                        <span>Daytrade</span>
+                                    </button>
                                 </div>
                             </div>
                             
@@ -270,6 +294,7 @@
                                         <th class="text-left py-3 px-4">股票</th>
                                         <th class="text-right py-3 px-4">持倉</th>
                                         <th class="text-right py-3 px-4">盈虧</th>
+                                        <th class="text-center py-3 px-4">類型</th>
                                         <th class="text-center py-3 px-4">R:R</th>
                                         <th class="text-center py-3 px-4">結果</th>
                                         <th class="text-left py-3 px-4">原因</th>
@@ -316,6 +341,7 @@
         let currentUser = null;
         let trades = [];
         let currentImageBase64 = null;
+        let currentTradeType = 'long'; // default
         
         // ==================== AUTH ====================
         function loginWithEmail() {
@@ -406,6 +432,19 @@
             document.getElementById('image-upload').value = '';
         }
         
+        // ==================== TRADE TYPE ====================
+        function selectTradeType(type) {
+            // Remove active from all
+            document.getElementById('type-short').classList.remove('active', 'border-blue-500');
+            document.getElementById('type-long').classList.remove('active', 'border-blue-500');
+            document.getElementById('type-daytrade').classList.remove('active', 'border-blue-500');
+            
+            // Add active to selected
+            document.getElementById('type-' + type).classList.add('active', 'border-blue-500');
+            
+            currentTradeType = type;
+        }
+        
         // ==================== UI FUNCTIONS ====================
         function selectOutcome(type) {
             const winLabel = document.getElementById('outcome-win');
@@ -443,6 +482,7 @@
                 amount: amount,
                 pnl: pnl,
                 riskReward: riskReward || 'N/A',
+                tradeType: currentTradeType,
                 outcome: outcome,
                 reason: reason || '未填寫',
                 image: currentImageBase64,
@@ -461,6 +501,9 @@
             document.getElementById('upload-placeholder').classList.remove('hidden');
             document.getElementById('image-preview').classList.add('hidden');
             document.getElementById('image-upload').value = '';
+            
+            // Reset trade type to long
+            selectTradeType('long');
         }
         
         function renderTrades() {
@@ -482,6 +525,11 @@
                     ? `<span class="win-badge">成功</span>` 
                     : `<span class="loss-badge">失敗</span>`;
                 
+                let typeHTML = '';
+                if (trade.tradeType === 'short') typeHTML = `<span class="px-2 py-0.5 text-xs bg-orange-900 text-orange-400 rounded">Short</span>`;
+                else if (trade.tradeType === 'long') typeHTML = `<span class="px-2 py-0.5 text-xs bg-emerald-900 text-emerald-400 rounded">Long</span>`;
+                else typeHTML = `<span class="px-2 py-0.5 text-xs bg-purple-900 text-purple-400 rounded">Day</span>`;
+                
                 let imageHTML = '';
                 if (trade.image) {
                     imageHTML = `<img src="${trade.image}" onclick="showImageModal('${trade.image}')" class="w-9 h-9 object-cover rounded-xl border border-slate-600 cursor-pointer hover:ring-2 hover:ring-blue-400" alt="圖片">`;
@@ -494,6 +542,7 @@
                     <td class="px-4 py-3 font-mono text-blue-400">${trade.symbol}</td>
                     <td class="px-4 py-3 text-right font-semibold">${amountStr}</td>
                     <td class="px-4 py-3 text-right font-semibold ${pnlColor}">${pnlStr}</td>
+                    <td class="px-4 py-3 text-center">${typeHTML}</td>
                     <td class="px-4 py-3 text-center text-xs text-purple-400">${trade.riskReward}</td>
                     <td class="px-4 py-3 text-center">${outcomeHTML}</td>
                     <td class="px-4 py-3 text-xs text-slate-300 max-w-[180px] truncate">${trade.reason}</td>
@@ -549,9 +598,9 @@
                 return;
             }
             
-            let csv = '日期,股票代碼,持倉金額,盈虧金額,風險回報比,結果,原因\n';
+            let csv = '日期,股票代碼,持倉金額,盈虧金額,風險回報比,交易類型,結果,原因\n';
             trades.forEach(t => {
-                csv += `${t.date},${t.symbol},${t.amount},${t.pnl || 0},${t.riskReward},${t.outcome === 'win' ? '成功' : '失敗'},"${t.reason}"\n`;
+                csv += `${t.date},${t.symbol},${t.amount},${t.pnl || 0},${t.riskReward},${t.tradeType},${t.outcome === 'win' ? '成功' : '失敗'},"${t.reason}"\n`;
             });
             
             const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
@@ -594,12 +643,17 @@
             }
         });
         
-        // Set default date
+        // Set default date + default trade type
         window.onload = function() {
             const dateInput = document.getElementById('trade-date');
             if (dateInput) dateInput.value = new Date().toISOString().split('T')[0];
             
+            // Set default trade type to Long
             setTimeout(() => {
+                const longBtn = document.getElementById('type-long');
+                if (longBtn) longBtn.classList.add('active', 'border-blue-500');
+                currentTradeType = 'long';
+                
                 const winLabel = document.getElementById('outcome-win');
                 if (winLabel) winLabel.classList.add('!border-emerald-500', 'bg-emerald-900/30');
             }, 300);
