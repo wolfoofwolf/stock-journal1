@@ -142,14 +142,15 @@
                 <div class="finance-card bg-slate-900 border border-slate-700 rounded-3xl p-6">
                     <div class="flex justify-between items-start">
                         <div>
-                            <p class="text-sm text-slate-400">總持倉金額</p>
+                            <p class="text-sm text-slate-400">當前總資金</p>
                             <div class="flex items-baseline mt-1">
-                                <div id="total-position" class="text-4xl font-bold">0</div>
+                                <div id="total-capital" class="text-4xl font-bold">0</div>
                                 <span class="text-xl text-slate-400 ml-1">元</span>
                             </div>
                         </div>
-                        <i class="fa-solid fa-wallet text-3xl text-amber-500"></i>
+                        <i class="fa-solid fa-wallet text-3xl text-emerald-500"></i>
                     </div>
+                    <div class="mt-2 text-xs text-emerald-400" id="capital-change">+0</div>
                 </div>
                 
                 <div class="finance-card bg-slate-900 border border-slate-700 rounded-3xl p-6">
@@ -196,6 +197,17 @@
                                 <input type="number" id="position-amount" placeholder="50000" class="w-full px-4 py-3 bg-slate-800 border border-slate-600 rounded-2xl text-lg font-semibold">
                             </div>
                             
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="text-sm text-slate-400 block mb-1">盈虧金額（元）</label>
+                                    <input type="number" id="pnl-amount" placeholder="例如：+5000 或 -3000" class="w-full px-4 py-3 bg-slate-800 border border-slate-600 rounded-2xl text-lg font-semibold">
+                                </div>
+                                <div>
+                                    <label class="text-sm text-slate-400 block mb-1">風險回報比 (R)</label>
+                                    <input type="text" id="risk-reward" placeholder="例如：1:2" class="w-full px-4 py-3 bg-slate-800 border border-slate-600 rounded-2xl text-lg font-semibold">
+                                </div>
+                            </div>
+                            
                             <div>
                                 <label class="text-sm text-slate-400 block mb-2">交易結果</label>
                                 <div class="flex gap-3">
@@ -215,22 +227,6 @@
                             <div>
                                 <label id="reason-label" class="text-sm text-slate-400 block mb-1">成功原因</label>
                                 <textarea id="trade-reason" rows="3" placeholder="例如：突破月線..." class="w-full px-4 py-3 bg-slate-800 border border-slate-600 rounded-2xl"></textarea>
-                            </div>
-                            
-                            <!-- Image Upload -->
-                            <div>
-                                <label class="text-sm text-slate-400 block mb-1">上傳圖片（K線圖 / 分析截圖）</label>
-                                <label class="block border-2 border-dashed border-slate-600 rounded-2xl p-4 text-center hover:border-blue-500 transition-colors cursor-pointer">
-                                    <input type="file" id="image-upload" accept="image/*" class="hidden" onchange="previewImage(this)">
-                                    <div id="upload-placeholder">
-                                        <i class="fa-solid fa-cloud-upload-alt text-3xl text-slate-500 mb-2"></i>
-                                        <p class="text-sm text-slate-400">點擊上傳圖片</p>
-                                    </div>
-                                    <div id="image-preview" class="hidden">
-                                        <img id="preview-img" class="mx-auto max-h-32 rounded-xl" alt="預覽">
-                                        <button type="button" onclick="removeImagePreview(event)" class="mt-2 text-xs px-3 py-1 bg-red-900 text-red-400 rounded-full">移除</button>
-                                    </div>
-                                </label>
                             </div>
                             
                             <button onclick="addTrade()" 
@@ -256,10 +252,11 @@
                                     <tr class="text-slate-400 text-xs border-b border-slate-700">
                                         <th class="text-left py-3 px-4">日期</th>
                                         <th class="text-left py-3 px-4">股票</th>
-                                        <th class="text-right py-3 px-4">金額</th>
+                                        <th class="text-right py-3 px-4">持倉</th>
+                                        <th class="text-right py-3 px-4">盈虧</th>
+                                        <th class="text-center py-3 px-4">R:R</th>
                                         <th class="text-center py-3 px-4">結果</th>
                                         <th class="text-left py-3 px-4">原因</th>
-                                        <th class="w-16 text-center">圖片</th>
                                         <th class="w-10"></th>
                                     </tr>
                                 </thead>
@@ -270,17 +267,6 @@
                 </div>
             </div>
             
-        </div>
-    </div>
-    
-    <!-- Image Modal -->
-    <div id="image-modal" onclick="closeImageModal()" class="hidden fixed inset-0 bg-black/80 z-[100] flex items-center justify-center p-4">
-        <div onclick="event.stopImmediatePropagation()" class="max-w-[90%] max-h-[90%] relative">
-            <img id="modal-image" class="max-w-full max-h-[85vh] rounded-3xl shadow-2xl" alt="交易圖片">
-            <button onclick="closeImageModal()" 
-                    class="absolute -top-3 -right-3 w-9 h-9 bg-white dark:bg-slate-800 rounded-full flex items-center justify-center shadow-xl border border-slate-200">
-                <i class="fa-solid fa-times text-xl"></i>
-            </button>
         </div>
     </div>
     
@@ -302,7 +288,6 @@
         
         let currentUser = null;
         let trades = [];
-        let currentImageBase64 = null;
         
         // ==================== AUTH ====================
         function loginWithEmail() {
@@ -363,37 +348,6 @@
             await loadTradesFromFirestore();
         }
         
-        // ==================== IMAGE HANDLING ====================
-        function previewImage(input) {
-            const file = input.files[0];
-            if (!file) return;
-            
-            if (file.size > 5 * 1024 * 1024) {
-                alert('圖片大小不能超過 5MB');
-                input.value = '';
-                return;
-            }
-            
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                currentImageBase64 = e.target.result;
-                
-                document.getElementById('upload-placeholder').classList.add('hidden');
-                const preview = document.getElementById('image-preview');
-                preview.classList.remove('hidden');
-                document.getElementById('preview-img').src = currentImageBase64;
-            };
-            reader.readAsDataURL(file);
-        }
-        
-        function removeImagePreview(e) {
-            e.preventDefault();
-            currentImageBase64 = null;
-            document.getElementById('upload-placeholder').classList.remove('hidden');
-            document.getElementById('image-preview').classList.add('hidden');
-            document.getElementById('image-upload').value = '';
-        }
-        
         // ==================== UI FUNCTIONS ====================
         function selectOutcome(type) {
             const winLabel = document.getElementById('outcome-win');
@@ -415,6 +369,8 @@
             const symbol = document.getElementById('stock-symbol').value.trim().toUpperCase();
             const date = document.getElementById('trade-date').value;
             const amount = parseFloat(document.getElementById('position-amount').value);
+            const pnl = parseFloat(document.getElementById('pnl-amount').value) || 0;
+            const riskReward = document.getElementById('risk-reward').value.trim();
             const outcome = document.querySelector('#outcome-win').classList.contains('!border-emerald-500') ? 'win' : 'loss';
             const reason = document.getElementById('trade-reason').value.trim();
             
@@ -427,9 +383,10 @@
                 date: date,
                 symbol: symbol,
                 amount: amount,
+                pnl: pnl,
+                riskReward: riskReward || 'N/A',
                 outcome: outcome,
                 reason: reason || '未填寫',
-                image: currentImageBase64,
                 createdAt: firebase.firestore.FieldValue.serverTimestamp()
             };
             
@@ -438,11 +395,9 @@
             // Clear form
             document.getElementById('stock-symbol').value = '';
             document.getElementById('position-amount').value = '';
+            document.getElementById('pnl-amount').value = '';
+            document.getElementById('risk-reward').value = '';
             document.getElementById('trade-reason').value = '';
-            currentImageBase64 = null;
-            document.getElementById('upload-placeholder').classList.remove('hidden');
-            document.getElementById('image-preview').classList.add('hidden');
-            document.getElementById('image-upload').value = '';
         }
         
         function renderTrades() {
@@ -458,24 +413,20 @@
                 
                 const dateStr = trade.date ? new Date(trade.date).toLocaleDateString('zh-TW') : '';
                 const amountStr = trade.amount ? trade.amount.toLocaleString() : '0';
+                const pnlStr = trade.pnl ? (trade.pnl > 0 ? `+${trade.pnl.toLocaleString()}` : trade.pnl.toLocaleString()) : '0';
+                const pnlColor = trade.pnl > 0 ? 'text-emerald-400' : (trade.pnl < 0 ? 'text-red-400' : 'text-slate-400');
                 const outcomeHTML = trade.outcome === 'win' 
                     ? `<span class="win-badge">成功</span>` 
                     : `<span class="loss-badge">失敗</span>`;
-                
-                let imageHTML = '';
-                if (trade.image) {
-                    imageHTML = `<img src="${trade.image}" onclick="showImageModal('${trade.image}')" class="w-9 h-9 object-cover rounded-xl border border-slate-600 cursor-pointer hover:ring-2 hover:ring-blue-400" alt="圖片">`;
-                } else {
-                    imageHTML = `<span class="text-slate-500 text-xs">無</span>`;
-                }
                 
                 row.innerHTML = `
                     <td class="px-4 py-3 text-xs text-slate-400">${dateStr}</td>
                     <td class="px-4 py-3 font-mono text-blue-400">${trade.symbol}</td>
                     <td class="px-4 py-3 text-right font-semibold">${amountStr}</td>
+                    <td class="px-4 py-3 text-right font-semibold ${pnlColor}">${pnlStr}</td>
+                    <td class="px-4 py-3 text-center text-xs text-purple-400">${trade.riskReward}</td>
                     <td class="px-4 py-3 text-center">${outcomeHTML}</td>
                     <td class="px-4 py-3 text-xs text-slate-300 max-w-[180px] truncate">${trade.reason}</td>
-                    <td class="px-4 py-3 text-center">${imageHTML}</td>
                     <td class="px-2 py-3">
                         <button onclick="deleteTrade('${trade.id}')" class="text-red-400 hover:text-red-600 p-1">
                             <i class="fa-solid fa-trash text-sm"></i>
@@ -495,15 +446,30 @@
             const total = trades.length;
             const wins = trades.filter(t => t.outcome === 'win').length;
             const winRate = total > 0 ? Math.round((wins / total) * 100) : 0;
-            const totalAmount = trades.reduce((sum, t) => sum + (t.amount || 0), 0);
             
-            let score = 50 + (wins * 5) - ((total - wins) * 3);
-            score = Math.max(0, Math.min(100, score));
+            // Calculate current capital based on P&L
+            let currentCapital = 0;
+            let totalPnL = 0;
+            
+            trades.forEach(trade => {
+                if (trade.pnl) {
+                    currentCapital += trade.pnl;
+                    totalPnL += trade.pnl;
+                }
+            });
+            
+            const pnlColor = totalPnL > 0 ? 'text-emerald-400' : (totalPnL < 0 ? 'text-red-400' : 'text-slate-400');
+            const pnlText = totalPnL > 0 ? `+${totalPnL.toLocaleString()}` : totalPnL.toLocaleString();
             
             document.getElementById('total-trades').textContent = total;
             document.getElementById('win-rate').textContent = winRate;
             document.getElementById('win-rate-bar').style.width = winRate + '%';
-            document.getElementById('total-position').textContent = totalAmount.toLocaleString();
+            document.getElementById('total-capital').textContent = currentCapital.toLocaleString();
+            document.getElementById('capital-change').innerHTML = `<span class="${pnlColor}">${pnlText}</span>`;
+            
+            // Performance score
+            let score = 50 + (wins * 5) - ((total - wins) * 3);
+            score = Math.max(0, Math.min(100, score));
             document.getElementById('performance-score').textContent = score;
             document.getElementById('score-bar').style.width = score + '%';
         }
@@ -514,9 +480,9 @@
                 return;
             }
             
-            let csv = '日期,股票代碼,持倉金額,結果,原因\n';
+            let csv = '日期,股票代碼,持倉金額,盈虧金額,風險回報比,結果,原因\n';
             trades.forEach(t => {
-                csv += `${t.date},${t.symbol},${t.amount},${t.outcome === 'win' ? '成功' : '失敗'},"${t.reason}"\n`;
+                csv += `${t.date},${t.symbol},${t.amount},${t.pnl || 0},${t.riskReward},${t.outcome === 'win' ? '成功' : '失敗'},"${t.reason}"\n`;
             });
             
             const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
@@ -524,20 +490,6 @@
             link.href = URL.createObjectURL(blob);
             link.download = `StockJournal_${new Date().toISOString().split('T')[0]}.csv`;
             link.click();
-        }
-        
-        function showImageModal(base64) {
-            const modal = document.getElementById('image-modal');
-            const img = document.getElementById('modal-image');
-            img.src = base64;
-            modal.style.display = 'flex';
-            modal.classList.remove('hidden');
-        }
-        
-        function closeImageModal() {
-            const modal = document.getElementById('image-modal');
-            modal.style.display = 'none';
-            modal.classList.add('hidden');
         }
         
         function showToast(msg) {
@@ -570,7 +522,7 @@
             }, 300);
         };
         
-        console.log('%c[StockJournal] 最終完整版本已載入 ✅', 'color:#22c55e');
+        console.log('%c[StockJournal] 最終版本已載入 ✅', 'color:#22c55e');
     </script>
 </body>
 </html>
