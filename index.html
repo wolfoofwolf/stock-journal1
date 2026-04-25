@@ -210,24 +210,29 @@
                                 </div>
                             </div>
                             
-                            <!-- Trade Type Buttons -->
+                            <!-- Trade Type Buttons (4 types) -->
                             <div>
                                 <label class="text-sm text-slate-400 block mb-2">交易類型</label>
-                                <div class="flex gap-2">
+                                <div class="grid grid-cols-4 gap-2">
                                     <button type="button" onclick="selectTradeType('short')" id="type-short"
-                                            class="type-btn flex-1 px-4 py-2.5 border-2 border-slate-600 rounded-2xl text-sm font-semibold flex items-center justify-center gap-x-1.5">
-                                        <i class="fa-solid fa-arrow-trend-down"></i>
+                                            class="type-btn px-3 py-2.5 border-2 border-slate-600 rounded-2xl text-xs font-semibold flex flex-col items-center justify-center gap-y-1">
+                                        <i class="fa-solid fa-arrow-trend-down text-lg"></i>
                                         <span>Shorts</span>
                                     </button>
                                     <button type="button" onclick="selectTradeType('long')" id="type-long"
-                                            class="type-btn flex-1 px-4 py-2.5 border-2 border-slate-600 rounded-2xl text-sm font-semibold flex items-center justify-center gap-x-1.5 active">
-                                        <i class="fa-solid fa-arrow-trend-up"></i>
+                                            class="type-btn px-3 py-2.5 border-2 border-slate-600 rounded-2xl text-xs font-semibold flex flex-col items-center justify-center gap-y-1 active border-blue-500">
+                                        <i class="fa-solid fa-arrow-trend-up text-lg"></i>
                                         <span>Long</span>
                                     </button>
                                     <button type="button" onclick="selectTradeType('daytrade')" id="type-daytrade"
-                                            class="type-btn flex-1 px-4 py-2.5 border-2 border-slate-600 rounded-2xl text-sm font-semibold flex items-center justify-center gap-x-1.5">
-                                        <i class="fa-solid fa-clock"></i>
+                                            class="type-btn px-3 py-2.5 border-2 border-slate-600 rounded-2xl text-xs font-semibold flex flex-col items-center justify-center gap-y-1">
+                                        <i class="fa-solid fa-clock text-lg"></i>
                                         <span>Daytrade</span>
+                                    </button>
+                                    <button type="button" onclick="selectTradeType('swing')" id="type-swing"
+                                            class="type-btn px-3 py-2.5 border-2 border-slate-600 rounded-2xl text-xs font-semibold flex flex-col items-center justify-center gap-y-1">
+                                        <i class="fa-solid fa-sync text-lg"></i>
+                                        <span>Swing</span>
                                     </button>
                                 </div>
                             </div>
@@ -341,7 +346,7 @@
         let currentUser = null;
         let trades = [];
         let currentImageBase64 = null;
-        let currentTradeType = 'long'; // default
+        let currentTradeType = 'long';
         
         // ==================== AUTH ====================
         function loginWithEmail() {
@@ -434,14 +439,12 @@
         
         // ==================== TRADE TYPE ====================
         function selectTradeType(type) {
-            // Remove active from all
             document.getElementById('type-short').classList.remove('active', 'border-blue-500');
             document.getElementById('type-long').classList.remove('active', 'border-blue-500');
             document.getElementById('type-daytrade').classList.remove('active', 'border-blue-500');
+            document.getElementById('type-swing').classList.remove('active', 'border-blue-500');
             
-            // Add active to selected
             document.getElementById('type-' + type).classList.add('active', 'border-blue-500');
-            
             currentTradeType = type;
         }
         
@@ -502,7 +505,7 @@
             document.getElementById('image-preview').classList.add('hidden');
             document.getElementById('image-upload').value = '';
             
-            // Reset trade type to long
+            // Reset to Long
             selectTradeType('long');
         }
         
@@ -528,7 +531,8 @@
                 let typeHTML = '';
                 if (trade.tradeType === 'short') typeHTML = `<span class="px-2 py-0.5 text-xs bg-orange-900 text-orange-400 rounded">Short</span>`;
                 else if (trade.tradeType === 'long') typeHTML = `<span class="px-2 py-0.5 text-xs bg-emerald-900 text-emerald-400 rounded">Long</span>`;
-                else typeHTML = `<span class="px-2 py-0.5 text-xs bg-purple-900 text-purple-400 rounded">Day</span>`;
+                else if (trade.tradeType === 'daytrade') typeHTML = `<span class="px-2 py-0.5 text-xs bg-purple-900 text-purple-400 rounded">Day</span>`;
+                else typeHTML = `<span class="px-2 py-0.5 text-xs bg-sky-900 text-sky-400 rounded">Swing</span>`;
                 
                 let imageHTML = '';
                 if (trade.image) {
@@ -648,7 +652,6 @@
             const dateInput = document.getElementById('trade-date');
             if (dateInput) dateInput.value = new Date().toISOString().split('T')[0];
             
-            // Set default trade type to Long
             setTimeout(() => {
                 const longBtn = document.getElementById('type-long');
                 if (longBtn) longBtn.classList.add('active', 'border-blue-500');
@@ -659,7 +662,7 @@
             }, 300);
         };
         
-        console.log('%c[StockJournal] 完整最終版本已載入 ✅', 'color:#22c55e');
+        console.log('%c[StockJournal] 完整版本已載入 ✅', 'color:#22c55e');
     </script>
 </body>
 </html>
