@@ -229,6 +229,22 @@
                                 <textarea id="trade-reason" rows="3" placeholder="例如：突破月線..." class="w-full px-4 py-3 bg-slate-800 border border-slate-600 rounded-2xl"></textarea>
                             </div>
                             
+                            <!-- Image Upload -->
+                            <div>
+                                <label class="text-sm text-slate-400 block mb-1">上傳圖片（K線圖 / 分析截圖）</label>
+                                <label class="block border-2 border-dashed border-slate-600 rounded-2xl p-4 text-center hover:border-blue-500 transition-colors cursor-pointer">
+                                    <input type="file" id="image-upload" accept="image/*" class="hidden" onchange="previewImage(this)">
+                                    <div id="upload-placeholder">
+                                        <i class="fa-solid fa-cloud-upload-alt text-3xl text-slate-500 mb-2"></i>
+                                        <p class="text-sm text-slate-400">點擊上傳圖片</p>
+                                    </div>
+                                    <div id="image-preview" class="hidden">
+                                        <img id="preview-img" class="mx-auto max-h-32 rounded-xl" alt="預覽">
+                                        <button type="button" onclick="removeImagePreview(event)" class="mt-2 text-xs px-3 py-1 bg-red-900 text-red-400 rounded-full">移除</button>
+                                    </div>
+                                </label>
+                            </div>
+                            
                             <button onclick="addTrade()" 
                                     class="w-full py-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold rounded-2xl flex items-center justify-center gap-x-2">
                                 <i class="fa-solid fa-save"></i>
@@ -270,6 +286,17 @@
         </div>
     </div>
     
+    <!-- Image Modal -->
+    <div id="image-modal" onclick="closeImageModal()" class="hidden fixed inset-0 bg-black/80 z-[100] flex items-center justify-center p-4">
+        <div onclick="event.stopImmediatePropagation()" class="max-w-[90%] max-h-[90%] relative">
+            <img id="modal-image" class="max-w-full max-h-[85vh] rounded-3xl shadow-2xl" alt="交易圖片">
+            <button onclick="closeImageModal()" 
+                    class="absolute -top-3 -right-3 w-9 h-9 bg-white dark:bg-slate-800 rounded-full flex items-center justify-center shadow-xl border border-slate-200">
+                <i class="fa-solid fa-times text-xl"></i>
+            </button>
+        </div>
+    </div>
+    
     <script>
         // ==================== FIREBASE CONFIG ====================
         const firebaseConfig = {
@@ -288,6 +315,7 @@
         
         let currentUser = null;
         let trades = [];
+        let currentImageBase64 = null;
         
         // ==================== AUTH ====================
         function loginWithEmail() {
@@ -348,6 +376,36 @@
             await loadTradesFromFirestore();
         }
         
+        // ==================== IMAGE HANDLING ====================
+        function previewImage(input) {
+            const file = input.files[0];
+            if (!file) return;
+            
+            if (file.size > 5 * 1024 * 1024) {
+                alert('圖片大小不能超過 5MB');
+                input.value = '';
+                return;
+            }
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                currentImageBase64 = e.target.result;
+                document.getElementById('upload-placeholder').classList.add('hidden');
+                const preview = document.getElementById('image-preview');
+                preview.classList.remove('hidden');
+                document.getElementById('preview-img').src = currentImageBase64;
+            };
+            reader.readAsDataURL(file);
+        }
+        
+        function removeImagePreview(e) {
+            e.preventDefault();
+            currentImageBase64 = null;
+            document.getElementById('upload-placeholder').classList.remove('hidden');
+            document.getElementById('image-preview').classList.add('hidden');
+            document.getElementById('image-upload').value = '';
+        }
+        
         // ==================== UI FUNCTIONS ====================
         function selectOutcome(type) {
             const winLabel = document.getElementById('outcome-win');
@@ -387,6 +445,7 @@
                 riskReward: riskReward || 'N/A',
                 outcome: outcome,
                 reason: reason || '未填寫',
+                image: currentImageBase64,
                 createdAt: firebase.firestore.FieldValue.serverTimestamp()
             };
             
@@ -398,6 +457,10 @@
             document.getElementById('pnl-amount').value = '';
             document.getElementById('risk-reward').value = '';
             document.getElementById('trade-reason').value = '';
+            currentImageBase64 = null;
+            document.getElementById('upload-placeholder').classList.remove('hidden');
+            document.getElementById('image-preview').classList.add('hidden');
+            document.getElementById('image-upload').value = '';
         }
         
         function renderTrades() {
@@ -419,6 +482,13 @@
                     ? `<span class="win-badge">成功</span>` 
                     : `<span class="loss-badge">失敗</span>`;
                 
+                let imageHTML = '';
+                if (trade.image) {
+                    imageHTML = `<img src="${trade.image}" onclick="showImageModal('${trade.image}')" class="w-9 h-9 object-cover rounded-xl border border-slate-600 cursor-pointer hover:ring-2 hover:ring-blue-400" alt="圖片">`;
+                } else {
+                    imageHTML = `<span class="text-slate-500 text-xs">無</span>`;
+                }
+                
                 row.innerHTML = `
                     <td class="px-4 py-3 text-xs text-slate-400">${dateStr}</td>
                     <td class="px-4 py-3 font-mono text-blue-400">${trade.symbol}</td>
@@ -427,6 +497,7 @@
                     <td class="px-4 py-3 text-center text-xs text-purple-400">${trade.riskReward}</td>
                     <td class="px-4 py-3 text-center">${outcomeHTML}</td>
                     <td class="px-4 py-3 text-xs text-slate-300 max-w-[180px] truncate">${trade.reason}</td>
+                    <td class="px-4 py-3 text-center">${imageHTML}</td>
                     <td class="px-2 py-3">
                         <button onclick="deleteTrade('${trade.id}')" class="text-red-400 hover:text-red-600 p-1">
                             <i class="fa-solid fa-trash text-sm"></i>
@@ -447,7 +518,6 @@
             const wins = trades.filter(t => t.outcome === 'win').length;
             const winRate = total > 0 ? Math.round((wins / total) * 100) : 0;
             
-            // Calculate current capital based on P&L
             let currentCapital = 0;
             let totalPnL = 0;
             
@@ -467,7 +537,6 @@
             document.getElementById('total-capital').textContent = currentCapital.toLocaleString();
             document.getElementById('capital-change').innerHTML = `<span class="${pnlColor}">${pnlText}</span>`;
             
-            // Performance score
             let score = 50 + (wins * 5) - ((total - wins) * 3);
             score = Math.max(0, Math.min(100, score));
             document.getElementById('performance-score').textContent = score;
@@ -490,6 +559,20 @@
             link.href = URL.createObjectURL(blob);
             link.download = `StockJournal_${new Date().toISOString().split('T')[0]}.csv`;
             link.click();
+        }
+        
+        function showImageModal(base64) {
+            const modal = document.getElementById('image-modal');
+            const img = document.getElementById('modal-image');
+            img.src = base64;
+            modal.style.display = 'flex';
+            modal.classList.remove('hidden');
+        }
+        
+        function closeImageModal() {
+            const modal = document.getElementById('image-modal');
+            modal.style.display = 'none';
+            modal.classList.add('hidden');
         }
         
         function showToast(msg) {
@@ -522,7 +605,7 @@
             }, 300);
         };
         
-        console.log('%c[StockJournal] 最終版本已載入 ✅', 'color:#22c55e');
+        console.log('%c[StockJournal] 完整最終版本已載入 ✅', 'color:#22c55e');
     </script>
 </body>
 </html>
