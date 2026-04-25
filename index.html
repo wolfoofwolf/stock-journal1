@@ -21,7 +21,8 @@
         .loss-badge { background-color: #fee2e2; color: #991b1b; padding: 2px 10px; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; }
         .type-btn { transition: all 0.1s ease; }
         .type-btn.active { background-color: #3b82f6; color: white; border-color: #3b82f6; }
-        .sidebar { transition: all 0.3s ease; }
+        .sidebar { transition: transform 0.3s ease; }
+        .sidebar-hidden { transform: translateX(-100%); }
     </style>
 </head>
 <body class="bg-slate-950 text-slate-100">
@@ -29,7 +30,7 @@
     <div class="flex h-screen overflow-hidden">
         
         <!-- Sidebar -->
-        <div class="w-72 bg-slate-900 border-r border-slate-700 flex flex-col">
+        <div id="sidebar" class="w-72 bg-slate-900 border-r border-slate-700 flex flex-col sidebar">
             <div class="p-6 border-b border-slate-700">
                 <div class="flex items-center gap-x-3">
                     <div class="w-10 h-10 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-2xl flex items-center justify-center">
@@ -103,7 +104,7 @@
             
             <div class="p-6 border-t border-slate-700 text-xs text-slate-500">
                 <div>資料已自動同步至 Google 雲端</div>
-                <div class="mt-1">版本 v4.2 • 2026</div>
+                <div class="mt-1">版本 v4.3 • 2026</div>
             </div>
         </div>
         
@@ -112,7 +113,13 @@
             
             <!-- Navbar -->
             <nav class="bg-slate-900 border-b border-slate-700 px-6 py-4 flex items-center justify-between">
-                <div class="flex items-center gap-x-3">
+                <div class="flex items-center gap-x-4">
+                    <!-- Toggle Sidebar Button -->
+                    <button onclick="toggleSidebar()" 
+                            class="w-10 h-10 flex items-center justify-center text-slate-400 hover:text-white hover:bg-slate-800 rounded-xl transition-all">
+                        <i class="fa-solid fa-bars text-xl"></i>
+                    </button>
+                    
                     <h2 class="text-xl font-bold">交易記錄</h2>
                 </div>
                 
@@ -367,6 +374,19 @@
         let trades = [];
         let currentImageBase64 = null;
         let currentTradeType = 'long';
+        let sidebarVisible = true;
+        
+        // ==================== SIDEBAR TOGGLE ====================
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            sidebarVisible = !sidebarVisible;
+            
+            if (sidebarVisible) {
+                sidebar.classList.remove('sidebar-hidden');
+            } else {
+                sidebar.classList.add('sidebar-hidden');
+            }
+        }
         
         // ==================== AUTH ====================
         function loginWithEmail() {
@@ -619,28 +639,23 @@
         function updateSidebarStats() {
             const currentYear = new Date().getFullYear();
             
-            // Filter trades for current year
             const yearTrades = trades.filter(t => {
                 if (!t.date) return false;
                 return new Date(t.date).getFullYear() === currentYear;
             });
             
-            // Swing Trade
             const swingTrades = yearTrades.filter(t => t.tradeType === 'swing');
             const swingWins = swingTrades.filter(t => t.outcome === 'win').length;
             const swingWinRate = swingTrades.length > 0 ? Math.round((swingWins / swingTrades.length) * 100) : 0;
             
-            // Day Trade
             const dayTrades = yearTrades.filter(t => t.tradeType === 'daytrade');
             const dayWins = dayTrades.filter(t => t.outcome === 'win').length;
             const dayWinRate = dayTrades.length > 0 ? Math.round((dayWins / dayTrades.length) * 100) : 0;
             
-            // Long + Short
             const longShortTrades = yearTrades.filter(t => t.tradeType === 'long' || t.tradeType === 'short');
             const longShortWins = longShortTrades.filter(t => t.outcome === 'win').length;
             const longShortWinRate = longShortTrades.length > 0 ? Math.round((longShortWins / longShortTrades.length) * 100) : 0;
             
-            // Update Sidebar
             document.getElementById('sidebar-swing-winrate').textContent = swingWinRate + '%';
             document.getElementById('sidebar-swing-bar').style.width = swingWinRate + '%';
             
@@ -707,6 +722,11 @@
             const dateInput = document.getElementById('trade-date');
             if (dateInput) dateInput.value = new Date().toISOString().split('T')[0];
             
+            // Default: Sidebar visible
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.remove('sidebar-hidden');
+            sidebarVisible = true;
+            
             setTimeout(() => {
                 const longBtn = document.getElementById('type-long');
                 if (longBtn) longBtn.classList.add('active', 'border-blue-500');
@@ -717,7 +737,7 @@
             }, 300);
         };
         
-        console.log('%c[StockJournal] Sidebar 版本已載入 ✅', 'color:#22c55e');
+        console.log('%c[StockJournal] Sidebar Toggle 版本已載入 ✅', 'color:#22c55e');
     </script>
 </body>
 </html>
