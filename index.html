@@ -17,7 +17,6 @@
         body { font-family: 'Noto Sans TC', system-ui, -apple-system, sans-serif; }
         .finance-card { transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
         .finance-card:hover { transform: translateY(-4px); box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1); }
-        .stat-value { font-variant-numeric: tabular-nums; }
         .win-badge { background-color: #dcfce7; color: #166534; padding: 2px 10px; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; }
         .loss-badge { background-color: #fee2e2; color: #991b1b; padding: 2px 10px; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; }
     </style>
@@ -171,8 +170,10 @@
                 </div>
             </div>
             
-            <!-- Input Form -->
+            <!-- Input Form + History -->
             <div class="grid grid-cols-1 lg:grid-cols-5 gap-6">
+                
+                <!-- Input Form -->
                 <div class="lg:col-span-2">
                     <div class="finance-card bg-slate-900 border border-slate-700 rounded-3xl p-6">
                         <h3 class="text-xl font-bold mb-5 flex items-center gap-x-2">
@@ -273,6 +274,17 @@
         </div>
     </div>
     
+    <!-- Image Modal -->
+    <div id="image-modal" onclick="closeImageModal()" class="hidden fixed inset-0 bg-black/80 z-[100] flex items-center justify-center p-4">
+        <div onclick="event.stopImmediatePropagation()" class="max-w-[90%] max-h-[90%] relative">
+            <img id="modal-image" class="max-w-full max-h-[85vh] rounded-3xl shadow-2xl" alt="交易圖片">
+            <button onclick="closeImageModal()" 
+                    class="absolute -top-3 -right-3 w-9 h-9 bg-white dark:bg-slate-800 rounded-full flex items-center justify-center shadow-xl border border-slate-200">
+                <i class="fa-solid fa-times text-xl"></i>
+            </button>
+        </div>
+    </div>
+    
     <script>
         // ==================== FIREBASE CONFIG ====================
         const firebaseConfig = {
@@ -285,13 +297,13 @@
           measurementId: "G-X0QPVWWPX1"
         };
         
-        // Initialize Firebase
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
         const db = firebase.firestore();
         
         let currentUser = null;
         let trades = [];
+        let currentImageBase64 = null;
         
         // ==================== AUTH ====================
         function loginWithEmail() {
@@ -321,7 +333,7 @@
         async function loadTradesFromFirestore() {
             if (!currentUser) return;
             
-            const snapshot = await db.collection('users').doc(currentUser.uid).collection('trades').orderBy('date', 'desc').get();
+            const snapshot = await db.collection('users').doc(currentUser.uid).collection('trades').orderBy('createdAt', 'desc').get();
             trades = [];
             snapshot.forEach(doc => {
                 trades.push({ id: doc.id, ...doc.data() });
@@ -339,8 +351,7 @@
                 await loadTradesFromFirestore();
                 showToast('✅ 已成功儲存到雲端！');
             } catch (error) {
-                console.error(error);
-                alert('儲存失敗：' + error.message + '\n請確認 Firestore 安全規則是否已設定');
+                alert('儲存失敗：' + error.message + '\n請確認 Firestore 規則已設定正確');
             }
         }
         
@@ -349,6 +360,45 @@
             
             await db.collection('users').doc(currentUser.uid).collection('trades').doc(id).delete();
             await loadTradesFromFirestore();
+        }
+        
+        // ==================== IMAGE HANDLING ====================
+        function previewImage(input) {
+            const file = input.files[0];
+            if (!file) return;
+            
+            if (file.size > 5 * 1024 * 1024) {
+                alert('圖片大小不能超過 5MB');
+                input.value = '';
+                return;
+            }
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                currentImageBase64 = e.target.result;
+                
+                const placeholder = document.getElementById('upload-placeholder');
+                const preview = document.getElementById('image-preview');
+                const img = document.getElementById('preview-img');
+                
+                img.src = currentImageBase64;
+                placeholder.classList.add('hidden');
+                preview.classList.remove('hidden');
+            };
+            reader.readAsDataURL(file);
+        }
+        
+        function removeImagePreview(e) {
+            e.stopImmediatePropagation();
+            currentImageBase64 = null;
+            
+            const placeholder = document.getElementById('upload-placeholder');
+            const preview = document.getElementById('image-preview');
+            const input = document.getElementById('image-upload');
+            
+            placeholder.classList.remove('hidden');
+            preview.classList.add('hidden');
+            input.value = '';
         }
         
         // ==================== UI FUNCTIONS ====================
@@ -386,6 +436,7 @@
                 amount: amount,
                 outcome: outcome,
                 reason: reason || '未填寫',
+                image: currentImageBase64,
                 createdAt: firebase.firestore.FieldValue.serverTimestamp()
             };
             
@@ -395,8 +446,15 @@
             document.getElementById('stock-symbol').value = '';
             document.getElementById('position-amount').value = '';
             document.getElementById('trade-reason').value = '';
+            currentImageBase64 = null;
             
-            showToast('✅ 已成功儲存到雲端！');
+            // Reset image preview
+            const placeholder = document.getElementById('upload-placeholder');
+            const preview = document.getElementById('image-preview');
+            const input = document.getElementById('image-upload');
+            placeholder.classList.remove('hidden');
+            preview.classList.add('hidden');
+            input.value = '';
         }
         
         function renderTrades() {
@@ -416,12 +474,18 @@
                     ? `<span class="win-badge">成功</span>` 
                     : `<span class="loss-badge">失敗</span>`;
                 
+                let imageHTML = '';
+                if (trade.image) {
+                    imageHTML = `<img src="${trade.image}" onclick="showImageModal('${trade.image}')" class="w-8 h-8 object-cover rounded cursor-pointer hover:ring-2 hover:ring-blue-400" alt="圖片">`;
+                }
+                
                 row.innerHTML = `
                     <td class="px-4 py-3 text-xs text-slate-400">${dateStr}</td>
                     <td class="px-4 py-3 font-mono text-blue-400">${trade.symbol}</td>
                     <td class="px-4 py-3 text-right font-semibold">${amountStr}</td>
                     <td class="px-4 py-3 text-center">${outcomeHTML}</td>
                     <td class="px-4 py-3 text-xs text-slate-300 max-w-[180px] truncate">${trade.reason}</td>
+                    <td class="px-2 py-3">${imageHTML}</td>
                     <td class="px-2 py-3">
                         <button onclick="deleteTrade('${trade.id}')" class="text-red-400 hover:text-red-600 p-1">
                             <i class="fa-solid fa-trash text-sm"></i>
@@ -472,6 +536,20 @@
             link.click();
         }
         
+        function showImageModal(base64) {
+            const modal = document.getElementById('image-modal');
+            const img = document.getElementById('modal-image');
+            img.src = base64;
+            modal.style.display = 'flex';
+            modal.classList.remove('hidden');
+        }
+        
+        function closeImageModal() {
+            const modal = document.getElementById('image-modal');
+            modal.style.display = 'none';
+            modal.classList.add('hidden');
+        }
+        
         function showToast(msg) {
             const toast = document.createElement('div');
             toast.className = 'fixed bottom-6 right-6 bg-emerald-600 text-white px-6 py-3 rounded-2xl shadow-xl flex items-center gap-x-3 z-[300]';
@@ -496,14 +574,13 @@
             const dateInput = document.getElementById('trade-date');
             if (dateInput) dateInput.value = new Date().toISOString().split('T')[0];
             
-            // Default select win
             setTimeout(() => {
                 const winLabel = document.getElementById('outcome-win');
                 if (winLabel) winLabel.classList.add('!border-emerald-500', 'bg-emerald-900/30');
             }, 300);
         };
         
-        console.log('%c[StockJournal] Firebase 版本已載入 ✅', 'color:#22c55e');
+        console.log('%c[StockJournal] Firebase 最終版本已載入 ✅', 'color:#22c55e');
     </script>
 </body>
 </html>
