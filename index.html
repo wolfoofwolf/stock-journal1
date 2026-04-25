@@ -3,121 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>StockJournal • 專業交易回測日誌</title>
+    <title>StockJournal • 私人交易回測日誌</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+    
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&amp;display=swap');
-        
-        :root {
-            --primary: #3b82f6;
-        }
-        
-        body {
-            font-family: 'Noto Sans TC', system-ui, -apple-system, sans-serif;
-        }
-        
-        .finance-card {
-            transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), 
-                       box-shadow 0.2s cubic-bezier(0.4, 0.0, 0.2, 1);
-        }
-        
-        .finance-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
-        }
-        
-        .stat-value {
-            font-variant-numeric: tabular-nums;
-        }
-        
-        .trade-row {
-            transition: background-color 0.1s ease;
-        }
-        
-        .trade-row:hover {
-            background-color: #f8fafc;
-        }
-        
-        .dark .trade-row:hover {
-            background-color: #1e2937;
-        }
-        
-        .win-badge {
-            background-color: #dcfce7;
-            color: #166534;
-            padding: 2px 10px;
-            border-radius: 9999px;
-            font-size: 0.75rem;
-            font-weight: 600;
-        }
-        
-        .loss-badge {
-            background-color: #fee2e2;
-            color: #991b1b;
-            padding: 2px 10px;
-            border-radius: 9999px;
-            font-size: 0.75rem;
-            font-weight: 600;
-        }
-        
-        .section-header {
-            font-size: 1.25rem;
-            font-weight: 700;
-            color: #0f172a;
-            margin-bottom: 1rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-        
-        .modal {
-            animation: fadeInScale 0.2s ease forwards;
-        }
-        
-        @keyframes fadeInScale {
-            from {
-                opacity: 0;
-                transform: scale(0.95);
-            }
-            to {
-                opacity: 1;
-                transform: scale(1);
-            }
-        }
-        
-        .data-table {
-            border: 1px solid #e2e8f0;
-        }
-        
-        .dark .data-table {
-            border-color: #334155;
-        }
-        
-        .metric {
-            transition: all 0.3s ease;
-        }
-        
-        .progress-bar {
-            transition: width 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
-        }
-        
-        .empty-state {
-            background: linear-gradient(145deg, #f8fafc, #f1e7ff);
-        }
-        
-        .dark .empty-state {
-            background: linear-gradient(145deg, #1e2937, #334155);
-        }
-        
-        .stock-symbol {
-            font-family: 'SF Mono', 'Monaco', 'Consolas', monospace;
-            font-weight: 700;
-            letter-spacing: 0.5px;
-        }
+        body { font-family: 'Noto Sans TC', system-ui, -apple-system, sans-serif; }
+        .finance-card { transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
+        .finance-card:hover { transform: translateY(-4px); box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1); }
+        .stat-value { font-variant-numeric: tabular-nums; }
+        .win-badge { background-color: #dcfce7; color: #166534; padding: 2px 10px; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; }
+        .loss-badge { background-color: #fee2e2; color: #991b1b; padding: 2px 10px; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; }
     </style>
 </head>
-<body class="bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100">
+<body class="bg-slate-950 text-slate-100">
     
     <!-- Login Screen -->
     <div id="login-screen" class="fixed inset-0 bg-slate-950 z-[200] flex items-center justify-center">
@@ -126,23 +31,21 @@
                 <div class="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-3xl mb-6 shadow-2xl">
                     <i class="fa-solid fa-lock text-white text-5xl"></i>
                 </div>
-                <h1 class="text-4xl font-bold text-white tracking-tight">StockJournal</h1>
-                <p class="text-slate-400 mt-2">專業交易回測日誌 • 私人模式</p>
+                <h1 class="text-4xl font-bold tracking-tight">StockJournal</h1>
+                <p class="text-slate-400 mt-2">私人交易回測日誌 • 雲端同步</p>
             </div>
             
             <div class="bg-slate-900 border border-slate-700 rounded-3xl p-8 shadow-2xl">
                 <div class="space-y-6">
-                    <!-- Username -->
                     <div>
-                        <label class="block text-sm font-semibold text-slate-300 mb-2">使用者名稱</label>
+                        <label class="block text-sm font-semibold text-slate-300 mb-2">電子郵件</label>
                         <div class="relative">
-                            <i class="fa-solid fa-user absolute left-4 top-4 text-slate-500"></i>
-                            <input type="text" id="login-username" placeholder="請輸入電子郵件" 
+                            <i class="fa-solid fa-envelope absolute left-4 top-4 text-slate-500"></i>
+                            <input type="email" id="login-email" value="makmingkit144@gmail.com" 
                                    class="w-full pl-12 pr-4 py-3.5 bg-slate-800 border border-slate-600 rounded-2xl text-white focus:outline-none focus:border-blue-500 text-lg">
                         </div>
                     </div>
                     
-                    <!-- Password -->
                     <div>
                         <label class="block text-sm font-semibold text-slate-300 mb-2">密碼</label>
                         <div class="relative">
@@ -150,1010 +53,435 @@
                             <input type="password" id="login-password" placeholder="請輸入密碼" 
                                    class="w-full pl-12 pr-4 py-3.5 bg-slate-800 border border-slate-600 rounded-2xl text-white focus:outline-none focus:border-blue-500 text-lg">
                         </div>
-                        <p class="text-xs text-slate-500 mt-1.5">預設：<span class="font-mono">stock / backtest2026</span>（想改密碼請編輯 index.html）</p>
                     </div>
                     
-                    <button onclick="performLogin()" 
+                    <button onclick="loginWithEmail()" 
                             class="w-full py-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold rounded-2xl shadow-xl flex items-center justify-center gap-x-3 active:scale-[0.985] transition-all text-lg">
                         <i class="fa-solid fa-sign-in-alt"></i>
                         <span>登入 StockJournal</span>
                     </button>
                     
-                    <div class="text-center">
-                        <p class="text-xs text-slate-500">資料完全儲存在你的瀏覽器，安全私密</p>
+                    <div class="text-center text-xs text-slate-500">
+                        資料安全儲存在 Google Firebase • 僅限本人存取
                     </div>
                 </div>
             </div>
             
-            <div class="text-center mt-8 text-xs text-amber-400">
-                ⚠️ 資料只存在此瀏覽器，建議定期匯出備份
+            <div class="text-center mt-6 text-xs text-slate-500">
+                忘記密碼？請使用 Firebase Console 重設
             </div>
         </div>
     </div>
     
-    <!-- Main App (hidden until login) -->
+    <!-- Main App -->
     <div id="main-app" class="hidden">
-    
-    <!-- Navbar -->
-    <nav class="bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto px-6 py-4">
-            <div class="flex items-center justify-between">
+        
+        <!-- Navbar -->
+        <nav class="bg-slate-900 border-b border-slate-700 sticky top-0 z-50">
+            <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
                 <div class="flex items-center gap-x-3">
-                    <div class="w-11 h-11 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-2xl flex items-center justify-center shadow-lg">
-                        <i class="fa-solid fa-book text-white text-3xl"></i>
+                    <div class="w-10 h-10 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-2xl flex items-center justify-center">
+                        <i class="fa-solid fa-book text-white text-2xl"></i>
                     </div>
                     <div>
-                        <h1 class="text-2xl font-bold tracking-tight">StockJournal</h1>
-                        <p class="text-xs text-slate-500 dark:text-slate-400 -mt-1">專業交易回測日誌</p>
+                        <h1 class="text-2xl font-bold">StockJournal</h1>
+                        <p class="text-xs text-emerald-400 -mt-1">✓ 已連線 Firebase</p>
                     </div>
                 </div>
                 
                 <div class="flex items-center gap-x-3">
-                    <div class="hidden md:flex items-center bg-slate-100 dark:bg-slate-800 rounded-full px-3 py-1 text-xs">
-                        <div class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse mr-2"></div>
-                        <span class="text-slate-600 dark:text-slate-300">GitHub Pages 部署中</span>
-                    </div>
-                    
-                    <a href="https://github.com" target="_blank" 
-                       class="flex items-center gap-x-2 px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors">
-                        <i class="fa-brands fa-github"></i>
-                        <span class="hidden sm:inline">GitHub</span>
-                    </a>
-                    
                     <button onclick="logout()" 
-                            class="flex items-center gap-x-2 px-4 py-2 text-sm font-medium text-red-400 hover:text-red-500 transition-colors">
+                            class="flex items-center gap-x-2 px-4 py-2 text-sm font-medium text-red-400 hover:text-red-500">
                         <i class="fa-solid fa-sign-out-alt"></i>
                         <span class="hidden sm:inline">登出</span>
                     </button>
                     
                     <button onclick="exportToCSV()" 
-                            class="flex items-center gap-x-2 px-4 py-2 bg-white dark:bg-slate-700 hover:bg-slate-100 dark:hover:bg-slate-600 border border-slate-200 dark:border-slate-600 rounded-xl text-sm font-medium transition-all active:scale-[0.985]">
-                        <i class="fa-solid fa-download mr-1.5"></i>
+                            class="flex items-center gap-x-2 px-5 py-2 bg-white text-slate-900 hover:bg-slate-200 rounded-xl text-sm font-semibold transition-all active:scale-[0.985]">
+                        <i class="fa-solid fa-download mr-2"></i>
                         <span>匯出 CSV</span>
                     </button>
-                    
-                    <label class="flex items-center gap-x-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-sm font-medium cursor-pointer transition-all active:scale-[0.985]">
-                        <i class="fa-solid fa-upload mr-1.5"></i>
-                        <span>匯入 CSV</span>
-                        <input type="file" accept=".csv" class="hidden" onchange="importFromCSV(this)">
-                    </label>
                 </div>
             </div>
-        </div>
-    </nav>
-
-    <!-- Data Warning Banner -->
-    <div class="bg-amber-900/30 border-b border-amber-700/50 py-2">
-        <div class="max-w-7xl mx-auto px-6 flex items-center justify-center gap-x-2 text-sm text-amber-300">
-            <i class="fa-solid fa-exclamation-triangle"></i>
-            <span><strong>重要提醒：</strong> 所有交易資料只儲存在此瀏覽器，關閉分頁或清除資料後將無法復原，建議定期「匯出 CSV」備份！</span>
-        </div>
-    </div>
-
-    <div class="max-w-7xl mx-auto px-6 py-8">
+        </nav>
         
-        <!-- Hero Stats -->
-        <div class="mb-10">
-            <div class="flex flex-col md:flex-row md:items-end md:justify-between mb-6">
-                <div>
-                    <h2 class="text-4xl font-bold tracking-tighter">交易表現總覽</h2>
-                    <p class="text-slate-500 dark:text-slate-400 mt-1">即時更新你的專業回測數據</p>
-                </div>
-                
-                <div class="mt-4 md:mt-0 flex items-center gap-x-2">
-                    <button onclick="clearAllData()" 
-                            class="px-4 py-2 text-sm text-red-600 hover:text-red-700 dark:text-red-400 flex items-center gap-x-1.5 transition-colors">
-                        <i class="fa-solid fa-trash-can"></i>
-                        <span>清除所有資料</span>
-                    </button>
-                </div>
-            </div>
+        <!-- Warning Banner -->
+        <div class="bg-emerald-900/30 border-b border-emerald-700/50 py-2 text-center text-sm text-emerald-300">
+            <i class="fa-solid fa-cloud mr-2"></i>
+            <span>資料已自動同步至 Google 雲端 • 隨時隨地可存取</span>
+        </div>
+        
+        <div class="max-w-7xl mx-auto px-6 py-8">
             
-            <!-- Stats Cards -->
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                
-                <!-- Total Trades -->
-                <div class="finance-card bg-white dark:bg-slate-800 rounded-3xl p-6 border border-slate-100 dark:border-slate-700 shadow-sm">
+            <!-- Stats -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+                <div class="finance-card bg-slate-900 border border-slate-700 rounded-3xl p-6">
                     <div class="flex justify-between items-start">
                         <div>
-                            <p class="text-sm font-medium text-slate-500 dark:text-slate-400">總交易筆數</p>
-                            <div id="total-trades" class="text-5xl font-bold tracking-tighter mt-1 stat-value">0</div>
+                            <p class="text-sm text-slate-400">總交易筆數</p>
+                            <div id="total-trades" class="text-5xl font-bold mt-1">0</div>
                         </div>
-                        <div class="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-2xl flex items-center justify-center">
-                            <i class="fa-solid fa-exchange-alt text-blue-600 dark:text-blue-400 text-2xl"></i>
-                        </div>
+                        <i class="fa-solid fa-exchange-alt text-3xl text-blue-500"></i>
                     </div>
-                    <div class="mt-4 text-xs text-slate-400">本月已記錄</div>
                 </div>
                 
-                <!-- Win Rate -->
-                <div class="finance-card bg-white dark:bg-slate-800 rounded-3xl p-6 border border-slate-100 dark:border-slate-700 shadow-sm">
+                <div class="finance-card bg-slate-900 border border-slate-700 rounded-3xl p-6">
                     <div class="flex justify-between items-start">
                         <div>
-                            <p class="text-sm font-medium text-slate-500 dark:text-slate-400">勝率</p>
+                            <p class="text-sm text-slate-400">勝率</p>
                             <div class="flex items-baseline">
-                                <div id="win-rate" class="text-5xl font-bold tracking-tighter mt-1 stat-value">0</div>
-                                <span class="text-2xl font-semibold text-slate-400 ml-1">%</span>
+                                <div id="win-rate" class="text-5xl font-bold mt-1">0</div>
+                                <span class="text-2xl text-slate-400 ml-1">%</span>
                             </div>
                         </div>
-                        <div class="w-12 h-12 bg-emerald-100 dark:bg-emerald-900/30 rounded-2xl flex items-center justify-center">
-                            <i class="fa-solid fa-trophy text-emerald-600 dark:text-emerald-400 text-2xl"></i>
-                        </div>
+                        <i class="fa-solid fa-trophy text-3xl text-emerald-500"></i>
                     </div>
-                    <div class="mt-4">
-                        <div class="h-2 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
-                            <div id="win-rate-bar" class="h-2 bg-emerald-500 rounded-full transition-all" style="width: 0%"></div>
-                        </div>
+                    <div class="mt-3 h-2 bg-slate-700 rounded-full">
+                        <div id="win-rate-bar" class="h-2 bg-emerald-500 rounded-full transition-all" style="width:0%"></div>
                     </div>
                 </div>
                 
-                <!-- Total Position -->
-                <div class="finance-card bg-white dark:bg-slate-800 rounded-3xl p-6 border border-slate-100 dark:border-slate-700 shadow-sm">
+                <div class="finance-card bg-slate-900 border border-slate-700 rounded-3xl p-6">
                     <div class="flex justify-between items-start">
                         <div>
-                            <p class="text-sm font-medium text-slate-500 dark:text-slate-400">總持倉金額</p>
+                            <p class="text-sm text-slate-400">總持倉金額</p>
                             <div class="flex items-baseline mt-1">
-                                <div id="total-position" class="text-4xl font-bold tracking-tighter stat-value">0</div>
-                                <span class="text-xl font-medium text-slate-400 ml-1">元</span>
+                                <div id="total-position" class="text-4xl font-bold">0</div>
+                                <span class="text-xl text-slate-400 ml-1">元</span>
                             </div>
                         </div>
-                        <div class="w-12 h-12 bg-amber-100 dark:bg-amber-900/30 rounded-2xl flex items-center justify-center">
-                            <i class="fa-solid fa-wallet text-amber-600 dark:text-amber-400 text-2xl"></i>
-                        </div>
-                    </div>
-                    <div class="mt-3 text-xs text-emerald-600 dark:text-emerald-400 flex items-center">
-                        <i class="fa-solid fa-arrow-trend-up mr-1"></i>
-                        <span id="avg-position">平均 0 元</span>
+                        <i class="fa-solid fa-wallet text-3xl text-amber-500"></i>
                     </div>
                 </div>
                 
-                <!-- Performance Score -->
-                <div class="finance-card bg-white dark:bg-slate-800 rounded-3xl p-6 border border-slate-100 dark:border-slate-700 shadow-sm">
+                <div class="finance-card bg-slate-900 border border-slate-700 rounded-3xl p-6">
                     <div class="flex justify-between items-start">
-                        <div class="flex-1">
-                            <p class="text-sm font-medium text-slate-500 dark:text-slate-400">表現分數</p>
-                            <div class="flex items-baseline">
-                                <div id="performance-score" class="text-5xl font-bold tracking-tighter mt-1 stat-value">50</div>
-                                <span class="text-xl font-semibold text-slate-400 ml-1">/100</span>
+                        <div>
+                            <p class="text-sm text-slate-400">表現分數</p>
+                            <div class="flex items-baseline mt-1">
+                                <div id="performance-score" class="text-5xl font-bold">50</div>
+                                <span class="text-xl text-slate-400 ml-1">/100</span>
                             </div>
                         </div>
-                        <div class="w-12 h-12 bg-purple-100 dark:bg-purple-900/30 rounded-2xl flex items-center justify-center">
-                            <i class="fa-solid fa-chart-line text-purple-600 dark:text-purple-400 text-2xl"></i>
-                        </div>
+                        <i class="fa-solid fa-chart-line text-3xl text-purple-500"></i>
                     </div>
-                    
-                    <div class="mt-4">
-                        <div class="flex items-center justify-between text-xs mb-1">
-                            <span class="text-slate-400">成長指數</span>
-                            <span id="score-change" class="font-mono text-emerald-600">+0</span>
-                        </div>
-                        <div class="h-2.5 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
-                            <div id="score-bar" class="h-2.5 bg-gradient-to-r from-purple-500 to-violet-500 rounded-full transition-all" 
-                                 style="width: 50%"></div>
-                        </div>
+                    <div class="mt-3 h-2.5 bg-slate-700 rounded-full">
+                        <div id="score-bar" class="h-2.5 bg-gradient-to-r from-purple-500 to-violet-500 rounded-full" style="width:50%"></div>
                     </div>
                 </div>
             </div>
-        </div>
-        
-        <!-- Main Content -->
-        <div class="grid grid-cols-1 lg:grid-cols-5 gap-6">
             
             <!-- Input Form -->
-            <div class="lg:col-span-2">
-                <div class="finance-card bg-white dark:bg-slate-800 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
-                    <div class="px-6 pt-6 pb-4 border-b border-slate-100 dark:border-slate-700">
-                        <div class="section-header">
-                            <i class="fa-solid fa-plus-circle text-blue-600"></i>
+            <div class="grid grid-cols-1 lg:grid-cols-5 gap-6">
+                <div class="lg:col-span-2">
+                    <div class="finance-card bg-slate-900 border border-slate-700 rounded-3xl p-6">
+                        <h3 class="text-xl font-bold mb-5 flex items-center gap-x-2">
+                            <i class="fa-solid fa-plus-circle text-blue-500"></i>
                             <span>新增交易記錄</span>
-                        </div>
-                    </div>
-                    
-                    <div class="p-6 space-y-5">
+                        </h3>
                         
-                        <!-- Stock & Date -->
-                        <div class="grid grid-cols-2 gap-4">
-                            <div>
-                                <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">股票代碼</label>
-                                <div class="relative">
-                                    <input type="text" id="stock-symbol" placeholder="2330" 
-                                           class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-600 rounded-2xl focus:outline-none focus:border-blue-500 text-lg font-mono placeholder:text-slate-400">
-                                    <div class="absolute right-4 top-3.5 text-xs px-2 py-0.5 bg-slate-200 dark:bg-slate-700 rounded text-slate-500">TW</div>
+                        <div class="space-y-4">
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="text-sm text-slate-400 block mb-1">股票代碼</label>
+                                    <input type="text" id="stock-symbol" placeholder="2330" class="w-full px-4 py-3 bg-slate-800 border border-slate-600 rounded-2xl text-lg font-mono">
+                                </div>
+                                <div>
+                                    <label class="text-sm text-slate-400 block mb-1">交易日期</label>
+                                    <input type="date" id="trade-date" class="w-full px-4 py-3 bg-slate-800 border border-slate-600 rounded-2xl">
                                 </div>
                             </div>
                             
                             <div>
-                                <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">交易日期</label>
-                                <input type="date" id="trade-date" 
-                                       class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-600 rounded-2xl focus:outline-none focus:border-blue-500">
+                                <label class="text-sm text-slate-400 block mb-1">持倉金額（元）</label>
+                                <input type="number" id="position-amount" placeholder="50000" class="w-full px-4 py-3 bg-slate-800 border border-slate-600 rounded-2xl text-lg font-semibold">
                             </div>
-                        </div>
-                        
-                        <!-- Position Amount -->
-                        <div>
-                            <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
-                                持倉金額 <span class="text-xs text-slate-400">(元)</span>
-                            </label>
-                            <div class="relative">
-                                <div class="absolute left-4 top-3.5 text-slate-400">
-                                    <i class="fa-solid fa-dollar-sign"></i>
-                                </div>
-                                <input type="number" id="position-amount" placeholder="50000" step="1000"
-                                       class="w-full pl-10 pr-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-600 rounded-2xl focus:outline-none focus:border-blue-500 text-lg font-semibold">
-                            </div>
-                            <p class="text-xs text-slate-400 mt-1">單筆交易投入金額</p>
-                        </div>
-                        
-                        <!-- Outcome -->
-                        <div>
-                            <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">交易結果</label>
-                            <div class="flex gap-3">
-                                <label onclick="selectOutcome('win')" id="outcome-win"
-                                       class="flex-1 flex items-center justify-center gap-x-2 px-5 py-3 border-2 border-emerald-200 dark:border-emerald-800 rounded-2xl cursor-pointer transition-all hover:border-emerald-400 active:scale-[0.985]">
-                                    <input type="radio" name="outcome" value="win" class="hidden" checked>
-                                    <i class="fa-solid fa-check-circle text-emerald-600 text-xl"></i>
-                                    <span class="font-semibold text-emerald-700 dark:text-emerald-400">成功 (Win)</span>
-                                </label>
-                                
-                                <label onclick="selectOutcome('loss')" id="outcome-loss"
-                                       class="flex-1 flex items-center justify-center gap-x-2 px-5 py-3 border-2 border-red-200 dark:border-red-800 rounded-2xl cursor-pointer transition-all hover:border-red-400 active:scale-[0.985]">
-                                    <input type="radio" name="outcome" value="loss" class="hidden">
-                                    <i class="fa-solid fa-times-circle text-red-600 text-xl"></i>
-                                    <span class="font-semibold text-red-700 dark:text-red-400">失敗 (Loss)</span>
-                                </label>
-                            </div>
-                        </div>
-                        
-                        <!-- Reason -->
-                        <div>
-                            <label id="reason-label" class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
-                                成功原因
-                            </label>
-                            <textarea id="trade-reason" rows="3" placeholder="例如：突破均線、量能放大、基本面利多..."
-                                      class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-600 rounded-2xl focus:outline-none focus:border-blue-500 resize-y min-h-[92px]"></textarea>
-                        </div>
-                        
-                        <!-- Image Upload -->
-                        <div>
-                            <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">上傳圖片（K線圖 / 分析截圖）</label>
                             
-                            <div class="border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-2xl p-4 text-center hover:border-blue-400 transition-colors cursor-pointer" 
-                                 onclick="document.getElementById('image-upload').click()">
-                                <input type="file" id="image-upload" accept="image/*" class="hidden" onchange="previewImage(this)">
-                                
-                                <div id="upload-placeholder" class="py-2">
-                                    <i class="fa-solid fa-cloud-upload-alt text-3xl text-slate-400 mb-2"></i>
-                                    <p class="text-sm text-slate-500">點擊上傳或拖曳圖片</p>
-                                    <p class="text-xs text-slate-400 mt-1">支援 JPG / PNG（最大 5MB）</p>
-                                </div>
-                                
-                                <div id="image-preview" class="hidden">
-                                    <img id="preview-img" class="mx-auto max-h-40 rounded-xl shadow-sm border border-slate-200" alt="預覽">
-                                    <button onclick="removeImagePreview(event)" 
-                                            class="mt-3 text-xs px-3 py-1 bg-red-100 text-red-600 rounded-full hover:bg-red-200 flex items-center gap-x-1 mx-auto">
-                                        <i class="fa-solid fa-times"></i>
-                                        <span>移除圖片</span>
-                                    </button>
+                            <div>
+                                <label class="text-sm text-slate-400 block mb-2">交易結果</label>
+                                <div class="flex gap-3">
+                                    <label onclick="selectOutcome('win')" id="outcome-win"
+                                           class="flex-1 flex justify-center items-center gap-x-2 px-5 py-3 border-2 border-emerald-700 rounded-2xl cursor-pointer">
+                                        <i class="fa-solid fa-check-circle text-emerald-500"></i>
+                                        <span class="font-semibold">成功</span>
+                                    </label>
+                                    <label onclick="selectOutcome('loss')" id="outcome-loss"
+                                           class="flex-1 flex justify-center items-center gap-x-2 px-5 py-3 border-2 border-red-700 rounded-2xl cursor-pointer">
+                                        <i class="fa-solid fa-times-circle text-red-500"></i>
+                                        <span class="font-semibold">失敗</span>
+                                    </label>
                                 </div>
                             </div>
+                            
+                            <div>
+                                <label id="reason-label" class="text-sm text-slate-400 block mb-1">成功原因</label>
+                                <textarea id="trade-reason" rows="3" placeholder="例如：突破月線..." class="w-full px-4 py-3 bg-slate-800 border border-slate-600 rounded-2xl"></textarea>
+                            </div>
+                            
+                            <button onclick="addTrade()" 
+                                    class="w-full py-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold rounded-2xl flex items-center justify-center gap-x-2">
+                                <i class="fa-solid fa-save"></i>
+                                <span>儲存到雲端</span>
+                            </button>
                         </div>
-                        
-                        <!-- Submit Button -->
-                        <button onclick="addTrade()" 
-                                class="w-full mt-2 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold rounded-2xl shadow-lg shadow-blue-500/30 flex items-center justify-center gap-x-3 active:scale-[0.985] transition-all">
-                            <i class="fa-solid fa-save"></i>
-                            <span>儲存交易記錄</span>
-                        </button>
-                        
                     </div>
                 </div>
-            </div>
-            
-            <!-- History Table -->
-            <div class="lg:col-span-3">
-                <div class="finance-card bg-white dark:bg-slate-800 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm h-full flex flex-col">
-                    <div class="px-6 pt-6 pb-4 border-b border-slate-100 dark:border-slate-700 flex items-center justify-between">
-                        <div class="section-header mb-0">
-                            <i class="fa-solid fa-history text-slate-600"></i>
-                            <span>交易歷史</span>
-                            <span id="history-count" class="ml-2 text-xs px-2.5 py-0.5 bg-slate-100 dark:bg-slate-700 rounded-full text-slate-500">0 筆</span>
+                
+                <!-- History Table -->
+                <div class="lg:col-span-3">
+                    <div class="finance-card bg-slate-900 border border-slate-700 rounded-3xl p-6 h-full">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-xl font-bold">交易歷史</h3>
+                            <span id="history-count" class="text-xs bg-slate-700 px-3 py-1 rounded-full">0 筆</span>
                         </div>
                         
-                        <div class="text-xs text-slate-400 flex items-center gap-x-1">
-                            <i class="fa-solid fa-info-circle"></i>
-                            <span>點擊圖片放大</span>
-                        </div>
-                    </div>
-                    
-                    <div class="flex-1 overflow-auto p-1" style="max-height: 520px;">
-                        <table class="w-full data-table rounded-2xl overflow-hidden">
-                            <thead>
-                                <tr class="bg-slate-50 dark:bg-slate-700/50 text-xs uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                                    <th class="px-5 py-3.5 text-left font-semibold">日期</th>
-                                    <th class="px-5 py-3.5 text-left font-semibold">股票</th>
-                                    <th class="px-5 py-3.5 text-right font-semibold">持倉金額</th>
-                                    <th class="px-5 py-3.5 text-center font-semibold">結果</th>
-                                    <th class="px-5 py-3.5 text-left font-semibold">原因</th>
-                                    <th class="px-5 py-3.5 text-center font-semibold w-16">圖片</th>
-                                    <th class="px-3 py-3.5 w-10"></th>
-                                </tr>
-                            </thead>
-                            <tbody id="trade-table-body" class="text-sm divide-y divide-slate-100 dark:divide-slate-700">
-                                <!-- Populated by JS -->
-                            </tbody>
-                        </table>
-                        
-                        <div id="empty-state" class="empty-state flex flex-col items-center justify-center py-12 px-6 text-center rounded-2xl mt-2">
-                            <i class="fa-solid fa-inbox text-5xl text-slate-300 dark:text-slate-600 mb-4"></i>
-                            <p class="font-semibold text-slate-500">尚未有交易記錄</p>
-                            <p class="text-sm text-slate-400 mt-1 max-w-[220px]">在上方表單新增第一筆交易，開始你的回測之旅</p>
+                        <div class="overflow-auto max-h-[480px]">
+                            <table class="w-full text-sm">
+                                <thead>
+                                    <tr class="text-slate-400 text-xs border-b border-slate-700">
+                                        <th class="text-left py-3 px-4">日期</th>
+                                        <th class="text-left py-3 px-4">股票</th>
+                                        <th class="text-right py-3 px-4">金額</th>
+                                        <th class="text-center py-3 px-4">結果</th>
+                                        <th class="text-left py-3 px-4">原因</th>
+                                        <th class="w-10"></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="trade-table-body" class="divide-y divide-slate-700"></tbody>
+                            </table>
                         </div>
                     </div>
                 </div>
             </div>
             
         </div>
-        
-        <!-- Tips -->
-        <div class="mt-8 text-center">
-            <div class="inline-flex items-center gap-x-2 text-xs text-slate-400 bg-white dark:bg-slate-800 px-4 py-2 rounded-3xl border border-slate-100 dark:border-slate-700">
-                <i class="fa-solid fa-lightbulb"></i>
-                <span>小提示：定期檢視勝率與原因，能幫助你優化交易策略</span>
-            </div>
-        </div>
-        
-    </div> <!-- End of main-app -->
+    </div>
     
-    <!-- Login JavaScript -->
     <script>
-        // Simple client-side login (not secure - for personal use only)
-        const CORRECT_USERNAME = "makmingkit144@gmail.com";
-        const CORRECT_PASSWORD = "S0163629";
+        // ==================== FIREBASE CONFIG ====================
+        const firebaseConfig = {
+            apiKey: "AIzaSyDDnshwF7GCGPLupghUMcIdNSGLwraeVXs",
+            authDomain: "stock-6a498.firebaseapp.com",
+            projectId: "stock-6a498",
+            storageBucket: "stock-6a498.firebasestorage.app",
+            messagingSenderId: "1011895872994",
+            appId: "1:1011895872994:web:fc29c5f69d47f0871dbb",
+            measurementId: "G-X0QPVWWPX1"
+        };
         
-        function performLogin() {
-            const username = document.getElementById('login-username').value.trim();
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+        
+        let currentUser = null;
+        let trades = [];
+        
+        // ==================== AUTH ====================
+        function loginWithEmail() {
+            const email = document.getElementById('login-email').value;
             const password = document.getElementById('login-password').value;
             
-            if (username === CORRECT_USERNAME && password === CORRECT_PASSWORD) {
-                // Success
-                localStorage.setItem('stockJournalLoggedIn', 'true');
-                document.getElementById('login-screen').style.display = 'none';
-                document.getElementById('main-app').classList.remove('hidden');
-                document.getElementById('main-app').classList.add('block');
-                
-                // Initialize the main app
-                initializeMainApp();
-            } else {
-                // Error
-                const loginBox = document.querySelector('#login-screen .bg-slate-900');
-                loginBox.style.transition = 'all 0.1s';
-                loginBox.style.transform = 'translateX(10px)';
-                
-                setTimeout(() => {
-                    loginBox.style.transform = 'translateX(-10px)';
-                }, 100);
-                
-                setTimeout(() => {
-                    loginBox.style.transform = 'translateX(0)';
-                }, 200);
-                
-                alert('使用者名稱或密碼錯誤！');
-            }
+            auth.signInWithEmailAndPassword(email, password)
+                .then((userCredential) => {
+                    currentUser = userCredential.user;
+                    document.getElementById('login-screen').style.display = 'none';
+                    document.getElementById('main-app').classList.remove('hidden');
+                    document.getElementById('main-app').classList.add('block');
+                    loadTradesFromFirestore();
+                })
+                .catch((error) => {
+                    alert('登入失敗：' + error.message);
+                });
         }
         
         function logout() {
-            if (confirm('確定要登出嗎？')) {
-                localStorage.removeItem('stockJournalLoggedIn');
+            auth.signOut().then(() => {
                 location.reload();
-            }
+            });
         }
         
-        function checkLoginStatus() {
-            const isLoggedIn = localStorage.getItem('stockJournalLoggedIn') === 'true';
+        // ==================== FIRESTORE ====================
+        async function loadTradesFromFirestore() {
+            if (!currentUser) return;
             
-            if (isLoggedIn) {
-                document.getElementById('login-screen').style.display = 'none';
-                document.getElementById('main-app').classList.remove('hidden');
-                document.getElementById('main-app').classList.add('block');
-                initializeMainApp();
-            } else {
-                document.getElementById('login-screen').style.display = 'flex';
-                document.getElementById('main-app').classList.add('hidden');
-            }
-        }
-        
-        function initializeMainApp() {
-            // This will be called after login
-            // The original initializeApp logic is moved here
-            console.log('%c[StockJournal] 使用者已登入，載入主程式', 'color:#22c55e');
+            const snapshot = await db.collection('users').doc(currentUser.uid).collection('trades').orderBy('date', 'desc').get();
+            trades = [];
+            snapshot.forEach(doc => {
+                trades.push({ id: doc.id, ...doc.data() });
+            });
             
-            // Load trades and stats
-            if (typeof loadTrades === 'function') {
-                loadTrades();
-            }
-            
-            // Set default date if not set
-            const dateInput = document.getElementById('trade-date');
-            if (dateInput && !dateInput.value) {
-                dateInput.value = new Date().toISOString().split('T')[0];
-            }
-        }
-        
-        // Override original initializeApp to check login first
-        window.onload = function() {
-            checkLoginStatus();
-        };
-    </script>
-    
-    <!-- Image Modal -->
-    <div id="image-modal" onclick="closeImageModal()" class="hidden fixed inset-0 bg-black/80 z-[100] flex items-center justify-center p-4">
-        <div onclick="event.stopImmediatePropagation()" class="max-w-[90%] max-h-[90%] relative">
-            <img id="modal-image" class="max-w-full max-h-[85vh] rounded-3xl shadow-2xl" alt="交易圖片">
-            <button onclick="closeImageModal()" 
-                    class="absolute -top-3 -right-3 w-9 h-9 bg-white dark:bg-slate-800 rounded-full flex items-center justify-center shadow-xl border border-slate-200">
-                <i class="fa-solid fa-times text-xl"></i>
-            </button>
-        </div>
-    </div>
-    
-    <!-- 自訂網址指南 -->
-    <div class="max-w-4xl mx-auto px-6 pb-12">
-        <div class="bg-gradient-to-br from-slate-900 to-slate-800 rounded-3xl p-8 text-white shadow-2xl border border-slate-700">
-            <div class="flex items-start gap-x-4">
-                <div class="w-12 h-12 bg-white/10 rounded-2xl flex items-center justify-center flex-shrink-0">
-                    <i class="fa-solid fa-globe text-3xl"></i>
-                </div>
-                <div class="flex-1">
-                    <h3 class="text-2xl font-bold mb-2">🚀 自訂你的專屬網址</h3>
-                    <p class="text-slate-300 mb-6">只需 3 步驟，讓你的回測平台擁有專業網址！</p>
-                    
-                    <div class="space-y-4 text-sm">
-                        <div class="flex gap-x-4">
-                            <div class="font-mono w-6 h-6 bg-white/10 rounded-full flex items-center justify-center flex-shrink-0">1</div>
-                            <div>
-                                <span class="font-semibold">建立 GitHub 倉庫</span><br>
-                                <span class="text-slate-400">建議倉庫名稱：<span class="font-mono bg-white/10 px-2 py-0.5 rounded">stock-journal</span></span>
-                            </div>
-                        </div>
-                        
-                        <div class="flex gap-x-4">
-                            <div class="font-mono w-6 h-6 bg-white/10 rounded-full flex items-center justify-center flex-shrink-0">2</div>
-                            <div>
-                                <span class="font-semibold">上傳 index.html</span><br>
-                                <span class="text-slate-400">把這個檔案上傳到倉庫根目錄</span>
-                            </div>
-                        </div>
-                        
-                        <div class="flex gap-x-4">
-                            <div class="font-mono w-6 h-6 bg-white/10 rounded-full flex items-center justify-center flex-shrink-0">3</div>
-                            <div>
-                                <span class="font-semibold">啟用 GitHub Pages</span><br>
-                                <span class="text-slate-400">Settings → Pages → Source: main → Save</span>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="mt-6 pt-6 border-t border-white/20 text-xs text-slate-400">
-                        完成後你的網址會是：<br>
-                        <span class="font-mono text-emerald-400">https://你的帳號.github.io/stock-journal</span>
-                    </div>
-                    
-                    <div class="mt-4 text-xs">
-                        <span class="inline-block bg-white/10 px-3 py-1 rounded-full">想用自己的網域名稱？</span>
-                        <span class="text-slate-400 ml-2">購買 stockjournal.tw 後，在 GitHub Pages 設定 CNAME 即可</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <footer class="text-center py-8 text-xs text-slate-400 border-t border-slate-200 dark:border-slate-800">
-        StockJournal v1.0 • 純前端 • 開源免費 • Made with ❤️ for GitHub Pages
-    </footer>
-    
-    <script>
-        // Tailwind script
-        function initializeTailwind() {
-            document.documentElement.classList.add('dark'); // Force dark mode for finance feel
-        }
-        
-        let trades = [];
-        let currentImageBase64 = null;
-        
-        // Load from localStorage
-        function loadTrades() {
-            const saved = localStorage.getItem('stockBacktestTrades');
-            if (saved) {
-                trades = JSON.parse(saved);
-            }
             renderTrades();
             updateStats();
         }
         
-        // Save to localStorage
-        function saveTrades() {
-            localStorage.setItem('stockBacktestTrades', JSON.stringify(trades));
+        async function addTradeToFirestore(tradeData) {
+            if (!currentUser) return;
+            
+            await db.collection('users').doc(currentUser.uid).collection('trades').add(tradeData);
+            await loadTradesFromFirestore(); // refresh
         }
         
-        // Select outcome (win/loss)
+        async function deleteTradeFromFirestore(id) {
+            if (!currentUser) return;
+            
+            await db.collection('users').doc(currentUser.uid).collection('trades').doc(id).delete();
+            await loadTradesFromFirestore();
+        }
+        
+        // ==================== UI FUNCTIONS ====================
         function selectOutcome(type) {
             const winLabel = document.getElementById('outcome-win');
             const lossLabel = document.getElementById('outcome-loss');
             const reasonLabel = document.getElementById('reason-label');
-            const reasonInput = document.getElementById('trade-reason');
             
             if (type === 'win') {
-                winLabel.classList.add('!border-emerald-500', 'bg-emerald-50', 'dark:bg-emerald-900/20');
-                winLabel.classList.remove('border-emerald-200', 'dark:border-emerald-800');
-                lossLabel.classList.remove('!border-red-500', 'bg-red-50', 'dark:bg-red-900/20');
-                lossLabel.classList.add('border-red-200', 'dark:border-red-800');
-                
-                reasonLabel.innerHTML = '成功原因 <span class="text-emerald-600">(為什麼這筆交易成功？)</span>';
-                reasonInput.placeholder = '例如：股價突破月線、成交量放大、利多消息公布...';
+                winLabel.classList.add('!border-emerald-500', 'bg-emerald-900/30');
+                lossLabel.classList.remove('!border-red-500', 'bg-red-900/30');
+                reasonLabel.innerHTML = '成功原因';
             } else {
-                lossLabel.classList.add('!border-red-500', 'bg-red-50', 'dark:bg-red-900/20');
-                lossLabel.classList.remove('border-red-200', 'dark:border-red-800');
-                winLabel.classList.remove('!border-emerald-500', 'bg-emerald-50', 'dark:bg-emerald-900/20');
-                winLabel.classList.add('border-emerald-200', 'dark:border-emerald-800');
-                
-                reasonLabel.innerHTML = '失敗原因 <span class="text-red-600">(吸取什麼教訓？)</span>';
-                reasonInput.placeholder = '例如：止損太早、忽略大盤走勢、消息面誤判...';
+                lossLabel.classList.add('!border-red-500', 'bg-red-900/30');
+                winLabel.classList.remove('!border-emerald-500', 'bg-emerald-900/30');
+                reasonLabel.innerHTML = '失敗原因';
             }
-            
-            // Set radio
-            document.querySelector(`input[name="outcome"][value="${type}"]`).checked = true;
         }
         
-        // Preview uploaded image
-        function previewImage(input) {
-            const file = input.files[0];
-            if (!file) return;
-            
-            if (file.size > 5 * 1024 * 1024) {
-                alert('圖片大小不能超過 5MB');
-                input.value = '';
-                return;
-            }
-            
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                currentImageBase64 = e.target.result;
-                
-                const placeholder = document.getElementById('upload-placeholder');
-                const preview = document.getElementById('image-preview');
-                const img = document.getElementById('preview-img');
-                
-                img.src = currentImageBase64;
-                placeholder.classList.add('hidden');
-                preview.classList.remove('hidden');
-            };
-            reader.readAsDataURL(file);
-        }
-        
-        function removeImagePreview(e) {
-            e.stopImmediatePropagation();
-            currentImageBase64 = null;
-            
-            const placeholder = document.getElementById('upload-placeholder');
-            const preview = document.getElementById('image-preview');
-            const input = document.getElementById('image-upload');
-            
-            placeholder.classList.remove('hidden');
-            preview.classList.add('hidden');
-            input.value = '';
-        }
-        
-        // Add new trade
-        function addTrade() {
+        async function addTrade() {
             const symbol = document.getElementById('stock-symbol').value.trim().toUpperCase();
             const date = document.getElementById('trade-date').value;
             const amount = parseFloat(document.getElementById('position-amount').value);
-            const outcomeRadio = document.querySelector('input[name="outcome"]:checked');
+            const outcome = document.querySelector('#outcome-win').classList.contains('!border-emerald-500') ? 'win' : 'loss';
             const reason = document.getElementById('trade-reason').value.trim();
             
-            if (!symbol) {
-                alert('請輸入股票代碼');
-                return;
-            }
-            if (!date) {
-                alert('請選擇交易日期');
-                return;
-            }
-            if (!amount || amount <= 0) {
-                alert('請輸入有效的持倉金額');
-                return;
-            }
-            if (!outcomeRadio) {
-                alert('請選擇交易結果');
+            if (!symbol || !date || !amount) {
+                alert('請填寫完整資料');
                 return;
             }
             
-            const outcome = outcomeRadio.value;
-            
-            const newTrade = {
-                id: Date.now(),
+            const tradeData = {
                 date: date,
                 symbol: symbol,
                 amount: amount,
                 outcome: outcome,
-                reason: reason || '未填寫原因',
-                image: currentImageBase64
+                reason: reason || '未填寫',
+                createdAt: firebase.firestore.FieldValue.serverTimestamp()
             };
             
-            trades.unshift(newTrade); // newest first
-            saveTrades();
-            renderTrades();
-            updateStats();
+            await addTradeToFirestore(tradeData);
             
-            // Reset form
-            resetForm();
-            
-            // Success toast
-            showToast(`✅ 已成功記錄 ${symbol} 交易！`);
-        }
-        
-        function resetForm() {
+            // Clear form
             document.getElementById('stock-symbol').value = '';
-            document.getElementById('trade-date').value = new Date().toISOString().split('T')[0];
             document.getElementById('position-amount').value = '';
             document.getElementById('trade-reason').value = '';
             
-            // Reset outcome to win
-            const winLabel = document.getElementById('outcome-win');
-            const lossLabel = document.getElementById('outcome-loss');
-            winLabel.classList.add('!border-emerald-500', 'bg-emerald-50', 'dark:bg-emerald-900/20');
-            winLabel.classList.remove('border-emerald-200', 'dark:border-emerald-800');
-            lossLabel.classList.remove('!border-red-500', 'bg-red-50', 'dark:bg-red-900/20');
-            lossLabel.classList.add('border-red-200', 'dark:border-red-800');
-            
-            document.querySelector('input[name="outcome"][value="win"]').checked = true;
-            document.getElementById('reason-label').innerHTML = '成功原因';
-            
-            // Clear image
-            currentImageBase64 = null;
-            document.getElementById('upload-placeholder').classList.remove('hidden');
-            document.getElementById('image-preview').classList.add('hidden');
-            document.getElementById('image-upload').value = '';
+            showToast('✅ 已成功儲存到雲端！');
         }
         
-        // Render table
         function renderTrades() {
             const tbody = document.getElementById('trade-table-body');
-            const emptyState = document.getElementById('empty-state');
-            const historyCount = document.getElementById('history-count');
+            const countEl = document.getElementById('history-count');
             
             tbody.innerHTML = '';
-            
-            if (trades.length === 0) {
-                emptyState.style.display = 'flex';
-                historyCount.textContent = '0 筆';
-                return;
-            }
-            
-            emptyState.style.display = 'none';
-            historyCount.textContent = `${trades.length} 筆`;
+            countEl.textContent = `${trades.length} 筆`;
             
             trades.forEach(trade => {
                 const row = document.createElement('tr');
-                row.className = 'trade-row';
+                row.className = 'hover:bg-slate-800';
                 
-                const dateFormatted = new Date(trade.date).toLocaleDateString('zh-TW', { 
-                    month: '2-digit', 
-                    day: '2-digit' 
-                });
-                
-                const amountFormatted = trade.amount.toLocaleString();
-                
+                const dateStr = trade.date ? new Date(trade.date).toLocaleDateString('zh-TW') : '';
+                const amountStr = trade.amount ? trade.amount.toLocaleString() : '0';
                 const outcomeHTML = trade.outcome === 'win' 
-                    ? `<span class="win-badge inline-flex items-center"><i class="fa-solid fa-check mr-1 text-xs"></i> 成功</span>`
-                    : `<span class="loss-badge inline-flex items-center"><i class="fa-solid fa-times mr-1 text-xs"></i> 失敗</span>`;
-                
-                const imageHTML = trade.image 
-                    ? `<img src="${trade.image}" onclick="showImageModal('${trade.image}')" class="w-9 h-9 object-cover rounded-xl border border-slate-200 cursor-pointer hover:ring-2 hover:ring-blue-400 transition-all" alt="交易圖">`
-                    : `<div class="w-9 h-9 bg-slate-100 dark:bg-slate-700 rounded-xl flex items-center justify-center"><i class="fa-solid fa-image text-slate-300 text-xs"></i></div>`;
+                    ? `<span class="win-badge">成功</span>` 
+                    : `<span class="loss-badge">失敗</span>`;
                 
                 row.innerHTML = `
-                    <td class="px-5 py-4 text-xs text-slate-500 font-mono">${dateFormatted}</td>
-                    <td class="px-5 py-4">
-                        <span class="stock-symbol text-blue-700 dark:text-blue-400 font-bold">${trade.symbol}</span>
-                    </td>
-                    <td class="px-5 py-4 text-right font-semibold tabular-nums">${amountFormatted}</td>
-                    <td class="px-5 py-4 text-center">${outcomeHTML}</td>
-                    <td class="px-5 py-4 max-w-[220px]">
-                        <div class="text-xs text-slate-600 dark:text-slate-300 line-clamp-2">${trade.reason}</div>
-                    </td>
-                    <td class="px-5 py-4 text-center">${imageHTML}</td>
-                    <td class="px-3 py-4">
-                        <button onclick="deleteTrade(${trade.id}, event)" 
-                                class="text-red-400 hover:text-red-600 p-1 transition-colors">
+                    <td class="px-4 py-3 text-xs text-slate-400">${dateStr}</td>
+                    <td class="px-4 py-3 font-mono text-blue-400">${trade.symbol}</td>
+                    <td class="px-4 py-3 text-right font-semibold">${amountStr}</td>
+                    <td class="px-4 py-3 text-center">${outcomeHTML}</td>
+                    <td class="px-4 py-3 text-xs text-slate-300 max-w-[180px] truncate">${trade.reason}</td>
+                    <td class="px-2 py-3">
+                        <button onclick="deleteTrade('${trade.id}')" class="text-red-400 hover:text-red-600 p-1">
                             <i class="fa-solid fa-trash text-sm"></i>
                         </button>
                     </td>
                 `;
-                
                 tbody.appendChild(row);
             });
         }
         
-        // Delete trade
-        function deleteTrade(id, e) {
-            e.stopImmediatePropagation();
-            
-            if (!confirm('確定要刪除這筆交易記錄嗎？')) return;
-            
-            trades = trades.filter(t => t.id !== id);
-            saveTrades();
-            renderTrades();
-            updateStats();
-            
-            showToast('已刪除交易記錄');
+        function deleteTrade(id) {
+            if (!confirm('確定要刪除這筆記錄嗎？')) return;
+            deleteTradeFromFirestore(id);
         }
         
-        // Update all stats
         function updateStats() {
-            const totalTrades = trades.length;
+            const total = trades.length;
             const wins = trades.filter(t => t.outcome === 'win').length;
-            const winRate = totalTrades > 0 ? Math.round((wins / totalTrades) * 100) : 0;
+            const winRate = total > 0 ? Math.round((wins / total) * 100) : 0;
+            const totalAmount = trades.reduce((sum, t) => sum + (t.amount || 0), 0);
             
-            const totalPosition = trades.reduce((sum, t) => sum + t.amount, 0);
-            const avgPosition = totalTrades > 0 ? Math.round(totalPosition / totalTrades) : 0;
-            
-            // Performance score: 50 base + 5 per win - 3 per loss
-            const losses = totalTrades - wins;
-            let score = 50 + (wins * 5) - (losses * 3);
+            let score = 50 + (wins * 5) - ((total - wins) * 3);
             score = Math.max(0, Math.min(100, score));
             
-            // Update DOM
-            document.getElementById('total-trades').textContent = totalTrades;
+            document.getElementById('total-trades').textContent = total;
             document.getElementById('win-rate').textContent = winRate;
-            document.getElementById('win-rate-bar').style.width = `${winRate}%`;
-            document.getElementById('total-position').textContent = totalPosition.toLocaleString();
-            document.getElementById('avg-position').innerHTML = `平均 <span class="font-semibold">${avgPosition.toLocaleString()}</span> 元`;
-            
-            // Score
+            document.getElementById('win-rate-bar').style.width = winRate + '%';
+            document.getElementById('total-position').textContent = totalAmount.toLocaleString();
             document.getElementById('performance-score').textContent = score;
-            document.getElementById('score-bar').style.width = `${score}%`;
-            
-            // Score change indicator
-            const scoreChangeEl = document.getElementById('score-change');
-            const change = (wins * 5) - (losses * 3);
-            if (change > 0) {
-                scoreChangeEl.innerHTML = `+${change}`;
-                scoreChangeEl.className = 'font-mono text-emerald-600';
-            } else if (change < 0) {
-                scoreChangeEl.innerHTML = `${change}`;
-                scoreChangeEl.className = 'font-mono text-red-600';
-            } else {
-                scoreChangeEl.innerHTML = `0`;
-                scoreChangeEl.className = 'font-mono text-slate-400';
-            }
-            
-            // Color the score
-            const scoreEl = document.getElementById('performance-score');
-            if (score >= 80) {
-                scoreEl.style.color = '#16a34a';
-            } else if (score >= 60) {
-                scoreEl.style.color = '#ca8a04';
-            } else {
-                scoreEl.style.color = '#dc2626';
-            }
+            document.getElementById('score-bar').style.width = score + '%';
         }
         
-        // Show image in modal
-        function showImageModal(base64) {
-            const modal = document.getElementById('image-modal');
-            const img = document.getElementById('modal-image');
-            img.src = base64;
-            modal.style.display = 'flex';
-            modal.classList.remove('hidden');
-        }
-        
-        function closeImageModal() {
-            const modal = document.getElementById('image-modal');
-            modal.style.display = 'none';
-            modal.classList.add('hidden');
-        }
-        
-        // Export to CSV
         function exportToCSV() {
             if (trades.length === 0) {
-                alert('目前沒有交易記錄可以匯出');
+                alert('目前沒有交易記錄');
                 return;
             }
             
             let csv = '日期,股票代碼,持倉金額,結果,原因\n';
-            
-            trades.forEach(trade => {
-                const date = trade.date;
-                const symbol = trade.symbol;
-                const amount = trade.amount;
-                const outcome = trade.outcome === 'win' ? '成功' : '失敗';
-                const reason = `"${trade.reason.replace(/"/g, '""')}"`;
-                
-                csv += `${date},${symbol},${amount},${outcome},${reason}\n`;
+            trades.forEach(t => {
+                csv += `${t.date},${t.symbol},${t.amount},${t.outcome === 'win' ? '成功' : '失敗'},"${t.reason}"\n`;
             });
             
             const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
             const link = document.createElement('a');
-            const url = URL.createObjectURL(blob);
-            link.href = url;
-            link.download = `股票回測記錄_${new Date().toISOString().split('T')[0]}.csv`;
+            link.href = URL.createObjectURL(blob);
+            link.download = `StockJournal_${new Date().toISOString().split('T')[0]}.csv`;
             link.click();
-            URL.revokeObjectURL(url);
-            
-            showToast('✅ CSV 檔案已下載');
         }
         
-        // Clear all data
-        function clearAllData() {
-            if (!confirm('確定要清除所有交易記錄嗎？此操作無法復原！')) return;
-            
-            trades = [];
-            localStorage.removeItem('stockBacktestTrades');
-            renderTrades();
-            updateStats();
-            
-            showToast('所有資料已清除');
-        }
-        
-        // Toast notification
-        function showToast(message) {
+        function showToast(msg) {
             const toast = document.createElement('div');
-            toast.className = `fixed bottom-6 right-6 bg-slate-900 text-white px-6 py-3 rounded-2xl shadow-2xl flex items-center gap-x-3 z-[200]`;
-            toast.innerHTML = `
-                <div>${message}</div>
-            `;
+            toast.className = 'fixed bottom-6 right-6 bg-emerald-600 text-white px-6 py-3 rounded-2xl shadow-xl flex items-center gap-x-3 z-[300]';
+            toast.innerHTML = msg;
             document.body.appendChild(toast);
-            
-            setTimeout(() => {
-                toast.style.transition = 'all 0.3s ease';
-                toast.style.opacity = '0';
-                toast.style.transform = 'translateY(10px)';
-                
-                setTimeout(() => toast.remove(), 300);
-            }, 2200);
+            setTimeout(() => toast.remove(), 2500);
         }
         
-        // Keyboard shortcuts
-        function setupKeyboardShortcuts() {
-            document.addEventListener('keydown', function(e) {
-                if (e.key === '/' && document.activeElement.tagName === 'BODY') {
-                    e.preventDefault();
-                    document.getElementById('stock-symbol').focus();
-                }
-                
-                if (e.metaKey && e.key === 'Enter') {
-                    const formVisible = document.getElementById('stock-symbol');
-                    if (document.activeElement === formVisible || 
-                        document.activeElement.closest('.finance-card')) {
-                        e.preventDefault();
-                        addTrade();
-                    }
-                }
-            });
-            
-            // Set default date to today
+        // Auto login check
+        auth.onAuthStateChanged(user => {
+            if (user) {
+                currentUser = user;
+                document.getElementById('login-screen').style.display = 'none';
+                document.getElementById('main-app').classList.remove('hidden');
+                document.getElementById('main-app').classList.add('block');
+                loadTradesFromFirestore();
+            }
+        });
+        
+        // Set default date
+        window.onload = function() {
             const dateInput = document.getElementById('trade-date');
-            dateInput.value = new Date().toISOString().split('T')[0];
+            if (dateInput) dateInput.value = new Date().toISOString().split('T')[0];
             
             // Default select win
             setTimeout(() => {
                 const winLabel = document.getElementById('outcome-win');
-                winLabel.classList.add('!border-emerald-500', 'bg-emerald-50', 'dark:bg-emerald-900/20');
-            }, 100);
-        }
-        
-        // Initialize everything
-        function initializeApp() {
-            initializeTailwind();
-            
-            // Set initial date
-            const dateInput = document.getElementById('trade-date');
-            dateInput.value = new Date().toISOString().split('T')[0];
-            
-            // Load saved trades
-            loadTrades();
-            
-            // Keyboard
-            setupKeyboardShortcuts();
-            
-            // Demo data for first time users (optional - can remove)
-            if (trades.length === 0) {
-                // Uncomment below to add sample data on first visit
-                /*
-                trades = [
-                    {id: Date.now()-10000, date: '2026-04-20', symbol: '2330', amount: 120000, outcome: 'win', reason: '突破月線，量能放大', image: null},
-                    {id: Date.now()-8000, date: '2026-04-18', symbol: '2454', amount: 85000, outcome: 'win', reason: 'AI概念股利多', image: null},
-                    {id: Date.now()-6000, date: '2026-04-15', symbol: '2317', amount: 45000, outcome: 'loss', reason: '大盤回檔未設停損', image: null},
-                ];
-                saveTrades();
-                renderTrades();
-                updateStats();
-                */
-            }
-            
-            // Easter egg: press "?" to show tips
-            document.addEventListener('keypress', function(e) {
-                if (e.key === '?') {
-                    const tips = [
-                        "💡 建議每週檢視一次勝率與原因",
-                        "📈 持倉金額建議控制在總資金 5-10%",
-                        "🧠 記錄失敗原因比成功更重要"
-                    ];
-                    showToast(tips[Math.floor(Math.random()*tips.length)]);
-                }
-            });
-            
-            console.log('%c[StockBacktest] 股票回測平台已初始化完成 ✅', 'color:#64748b');
-        }
-        
-        // Boot app - handled by login system
-        // window.onload = initializeApp;
-        
-        // Make functions global for console debugging
-        window.STOCK_BACKTEST = { 
-            clearAll: () => { localStorage.removeItem('stockBacktestTrades'); location.reload(); },
-            exportData: () => exportToCSV()
+                if (winLabel) winLabel.classList.add('!border-emerald-500', 'bg-emerald-900/30');
+            }, 300);
         };
-
-        // Import from CSV
-        function importFromCSV(input) {
-            const file = input.files[0];
-            if (!file) return;
-
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const csv = e.target.result;
-                const lines = csv.trim().split('\n');
-                
-                if (lines.length < 2) {
-                    alert('CSV 檔案格式不正確');
-                    return;
-                }
-
-                let importedCount = 0;
-                const newTrades = [];
-
-                for (let i = 1; i < lines.length; i++) {
-                    const cols = lines[i].split(',');
-                    if (cols.length < 5) continue;
-
-                    const date = cols[0];
-                    const symbol = cols[1];
-                    const amount = parseFloat(cols[2]);
-                    const outcomeText = cols[3];
-                    const reason = cols[4].replace(/^"|"$/g, '').replace(/""/g, '"');
-
-                    if (!symbol || isNaN(amount)) continue;
-
-                    const outcome = outcomeText.includes('成功') ? 'win' : 'loss';
-
-                    newTrades.push({
-                        id: Date.now() + i,
-                        date: date,
-                        symbol: symbol,
-                        amount: amount,
-                        outcome: outcome,
-                        reason: reason || '從 CSV 匯入',
-                        image: null
-                    });
-                    importedCount++;
-                }
-
-                if (importedCount > 0) {
-                    trades = [...newTrades, ...trades];
-                    saveTrades();
-                    renderTrades();
-                    updateStats();
-                    alert(`✅ 成功匯入 ${importedCount} 筆交易！`);
-                } else {
-                    alert('沒有找到可匯入的交易資料');
-                }
-                
-                input.value = '';
-            };
-            reader.readAsText(file);
-        }
+        
+        console.log('%c[StockJournal] Firebase 版本已載入 ✅', 'color:#22c55e');
     </script>
 </body>
 </html>
