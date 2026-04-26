@@ -22,7 +22,6 @@
         .type-btn { transition: all 0.1s ease; }
         .type-btn.active { background-color: #3b82f6; color: white; border-color: #3b82f6; }
         
-        /* Smooth Sidebar Animation - 1.5s */
         #sidebar {
             transition: transform 1.5s cubic-bezier(0.32, 0.72, 0, 1);
         }
@@ -52,7 +51,6 @@
     <div id="sidebar" onclick="toggleSidebar()" class="fixed inset-0 bg-black/60 z-[200] hidden">
         <div onclick="event.stopImmediatePropagation()" class="w-80 h-full bg-slate-900 border-r border-slate-700 flex flex-col sidebar-overlay">
             
-            <!-- Sidebar Header -->
             <div class="p-6 border-b border-slate-700 flex justify-between items-center">
                 <div class="flex items-center gap-x-3">
                     <div class="w-10 h-10 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-2xl flex items-center justify-center">
@@ -68,17 +66,14 @@
                 </button>
             </div>
             
-            <!-- Sidebar Menu -->
             <div class="p-4 flex-1 overflow-auto">
                 <div class="space-y-2">
-                    <!-- 年度表現總結 Button -->
                     <button onclick="showYearSummary()" 
                             class="w-full flex items-center gap-x-3 px-4 py-3 text-left hover:bg-slate-800 rounded-2xl transition-all">
                         <i class="fa-solid fa-calendar-check text-emerald-500 w-5"></i>
                         <span class="font-medium">年度表現總結</span>
                     </button>
                     
-                    <!-- 收藏的交易 Button -->
                     <button onclick="showFavorites()" 
                             class="w-full flex items-center gap-x-3 px-4 py-3 text-left hover:bg-slate-800 rounded-2xl transition-all">
                         <i class="fa-solid fa-star text-yellow-500 w-5"></i>
@@ -96,10 +91,8 @@
     <!-- Main Content -->
     <div>
         
-        <!-- Navbar (Full Width) -->
         <nav class="bg-slate-900 border-b border-slate-700 px-6 py-4 flex items-center justify-between sticky top-0 z-50 w-full">
             <div class="flex items-center gap-x-4">
-                <!-- Hamburger Button -->
                 <button onclick="toggleSidebar()" 
                         class="w-10 h-10 flex items-center justify-center text-slate-400 hover:text-white hover:bg-slate-800 rounded-xl transition-all">
                     <i class="fa-solid fa-bars text-xl"></i>
@@ -290,7 +283,6 @@
                                 </div>
                             </div>
                             
-                            <!-- Trade Type Buttons -->
                             <div>
                                 <label class="text-sm text-slate-400 block mb-2">交易類型</label>
                                 <div class="grid grid-cols-4 gap-2">
@@ -338,9 +330,8 @@
                                 <textarea id="trade-reason" rows="3" placeholder="例如：突破月線..." class="w-full px-4 py-3 bg-slate-800 border border-slate-600 rounded-2xl"></textarea>
                             </div>
                             
-                            <!-- Image Upload -->
                             <div>
-                                <label class="text-sm text-slate-400 block mb-1">上傳圖片（K線圖 / 分析截圖）</label>
+                                <label class="text-sm text-slate-400 block mb-1">上傳圖片</label>
                                 <label class="block border-2 border-dashed border-slate-600 rounded-2xl p-4 text-center hover:border-blue-500 transition-colors cursor-pointer">
                                     <input type="file" id="image-upload" accept="image/*" class="hidden" onchange="previewImage(this)">
                                     <div id="upload-placeholder">
@@ -369,7 +360,6 @@
                         <div class="flex justify-between items-center mb-4">
                             <h3 class="text-xl font-bold">交易歷史</h3>
                             
-                            <!-- Filter Buttons -->
                             <div class="flex gap-1 text-xs">
                                 <button onclick="filterTrades('all')" id="filter-all"
                                         class="filter-btn active px-3 py-1 rounded-full bg-blue-600 text-white">全部</button>
@@ -400,6 +390,7 @@
                                         <th class="text-left py-3 px-4">原因</th>
                                         <th class="w-10"></th>
                                         <th class="w-10"></th>
+                                        <th class="w-10"></th>
                                     </tr>
                                 </thead>
                                 <tbody id="trade-table-body" class="divide-y divide-slate-700"></tbody>
@@ -423,7 +414,6 @@
     </div>
     
     <script>
-        // ==================== FIREBASE CONFIG ====================
         const firebaseConfig = {
           apiKey: "AIzaSyDDnshwF7GCGPLuphgUMcIdNSGLwraeVXs",
           authDomain: "stock-6a498.firebaseapp.com",
@@ -445,7 +435,6 @@
         let currentTradeType = 'long';
         let currentFilter = 'all';
         
-        // ==================== SIDEBAR TOGGLE ====================
         function toggleSidebar() {
             const sidebar = document.getElementById('sidebar');
             if (sidebar.classList.contains('hidden')) {
@@ -457,13 +446,23 @@
             }
         }
         
-        // ==================== SHOW YEAR SUMMARY ====================
         function showYearSummary() {
             toggleSidebar();
-            alert('年度表現總結功能已開啟！\n\n2026年表現即時更新中...\n每年12月31日會自動鎖定當年數據');
+            
+            const currentYear = new Date().getFullYear();
+            const isLastDay = (new Date().getMonth() === 11 && new Date().getDate() === 31);
+            
+            let message = `年度表現總結\n\n${currentYear}年表現即時更新中...\n`;
+            
+            if (isLastDay) {
+                message += `\n✅ 今天是12月31日！\n系統已自動鎖定${currentYear}年數據\n並為${currentYear + 1}年開啟新欄位`;
+            } else {
+                message += `\n下次12月31日會自動鎖定當年數據`;
+            }
+            
+            alert(message);
         }
         
-        // ==================== SHOW FAVORITES ====================
         function showFavorites() {
             toggleSidebar();
             if (favorites.length === 0) {
@@ -496,7 +495,6 @@
             document.body.insertAdjacentHTML('beforeend', html);
         }
         
-        // ==================== TOGGLE FAVORITE ====================
         async function toggleFavorite(tradeId, event) {
             event.stopImmediatePropagation();
             
@@ -518,7 +516,6 @@
             renderTrades();
         }
         
-        // ==================== AUTH ====================
         function loginWithEmail() {
             const email = document.getElementById('login-email').value;
             const password = document.getElementById('login-password').value;
@@ -543,7 +540,6 @@
             });
         }
         
-        // ==================== FIRESTORE ====================
         async function loadTradesFromFirestore() {
             if (!currentUser) return;
             
@@ -589,7 +585,6 @@
             await loadTradesFromFirestore();
         }
         
-        // ==================== IMAGE HANDLING ====================
         function previewImage(input) {
             const file = input.files[0];
             if (!file) return;
@@ -619,7 +614,6 @@
             document.getElementById('image-upload').value = '';
         }
         
-        // ==================== TRADE TYPE ====================
         function selectTradeType(type) {
             document.getElementById('type-short').classList.remove('active', 'border-blue-500');
             document.getElementById('type-long').classList.remove('active', 'border-blue-500');
@@ -630,7 +624,6 @@
             currentTradeType = type;
         }
         
-        // ==================== FILTER TRADES ====================
         function filterTrades(type) {
             currentFilter = type;
             
@@ -640,7 +633,6 @@
             renderTrades();
         }
         
-        // ==================== UI FUNCTIONS ====================
         function selectOutcome(type) {
             const winLabel = document.getElementById('outcome-win');
             const lossLabel = document.getElementById('outcome-loss');
@@ -686,7 +678,6 @@
             
             await addTradeToFirestore(tradeData);
             
-            // Clear form
             document.getElementById('stock-symbol').value = '';
             document.getElementById('position-amount').value = '';
             document.getElementById('pnl-amount').value = '';
@@ -740,6 +731,7 @@
                 
                 const isFavorite = favorites.some(f => f.id === trade.id);
                 const starHTML = `<button onclick="toggleFavorite('${trade.id}', event)" class="star-btn p-1 ${isFavorite ? 'active text-yellow-400' : 'text-slate-500 hover:text-yellow-400'}"><i class="fa-solid fa-star"></i></button>`;
+                const deleteHTML = `<button onclick="deleteTrade('${trade.id}')" class="text-red-400 hover:text-red-600 p-1"><i class="fa-solid fa-trash text-sm"></i></button>`;
                 
                 row.innerHTML = `
                     <td class="px-4 py-3 text-xs text-slate-400">${dateStr}</td>
@@ -752,6 +744,7 @@
                     <td class="px-4 py-3 text-xs text-slate-300 max-w-[180px] truncate">${trade.reason}</td>
                     <td class="px-4 py-3 text-center">${imageHTML}</td>
                     <td class="px-2 py-3">${starHTML}</td>
+                    <td class="px-2 py-3">${deleteHTML}</td>
                 `;
                 tbody.appendChild(row);
             });
@@ -875,7 +868,6 @@
             setTimeout(() => toast.remove(), 2500);
         }
         
-        // Auto login check
         auth.onAuthStateChanged(user => {
             if (user) {
                 currentUser = user;
@@ -887,7 +879,6 @@
             }
         });
         
-        // Set default date + default trade type
         window.onload = function() {
             const dateInput = document.getElementById('trade-date');
             if (dateInput) dateInput.value = new Date().toISOString().split('T')[0];
@@ -904,7 +895,7 @@
             }, 300);
         };
         
-        console.log('%c[StockJournal] 最終完整版本已載入 ✅', 'color:#22c55e');
+        console.log('%c[StockJournal] 最終修復版本已載入 ✅', 'color:#22c55e');
     </script>
 </body>
 </html>
