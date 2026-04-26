@@ -571,9 +571,9 @@
                         <div class="ml-4 flex flex-col items-end gap-y-2">
                             ${imageHTML}
                             <button onclick="deleteFavorite('${trade.id}', event)" 
-                                    class="text-red-400 hover:text-red-600 text-xs flex items-center gap-x-1 mt-2">
+                                    class="px-3 py-1 bg-red-900 hover:bg-red-800 text-red-400 text-xs rounded-xl flex items-center gap-x-1 mt-2 transition-all">
                                 <i class="fa-solid fa-trash"></i>
-                                <span>刪除</span>
+                                <span class="font-semibold">刪除</span>
                             </button>
                         </div>
                     </div>
@@ -886,7 +886,7 @@
                 
                 row.innerHTML = `
                     <td class="px-4 py-3 text-xs text-slate-400">${dateStr}</td>
-                    <td class="px-4 py-3 font-mono text-blue-400">${trade.symbol}</td>
+                    <td class="px-4 py-3 font-mono text-blue-400">${trade.symbol} ${isFavorite ? '<span class="text-yellow-400">★</span>' : ''}</td>
                     <td class="px-4 py-3 text-right font-semibold">${amountStr}</td>
                     <td class="px-4 py-3 text-right font-semibold ${pnlColor}">${pnlStr}</td>
                     <td class="px-4 py-3 text-center">${typeHTML}</td>
