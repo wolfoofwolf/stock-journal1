@@ -1,4 +1,4 @@
-\<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
@@ -615,9 +615,16 @@
         async function addTradeToFirestore(tradeData) {
             if (!currentUser) {
                 alert('⚠️ 偵測到你已登出，請重新登入！');
-                // Force show login screen
-                document.getElementById('login-screen').style.display = 'flex';
-                document.getElementById('main-app').classList.add('hidden');
+                
+                // Force switch to login screen
+                const loginScreen = document.getElementById('login-screen');
+                const mainApp = document.getElementById('main-app');
+                
+                if (loginScreen) loginScreen.style.display = 'flex';
+                if (mainApp) {
+                    mainApp.classList.add('hidden');
+                    mainApp.classList.remove('block');
+                }
                 return;
             }
             
@@ -707,6 +714,16 @@
         }
         
         async function addTrade() {
+            // Double check authentication before saving
+            if (!currentUser || !auth.currentUser) {
+                alert('⚠️ 偵測到你已登出，請重新登入！');
+                const loginScreen = document.getElementById('login-screen');
+                const mainApp = document.getElementById('main-app');
+                if (loginScreen) loginScreen.style.display = 'flex';
+                if (mainApp) mainApp.classList.add('hidden');
+                return;
+            }
+            
             const symbol = document.getElementById('stock-symbol').value.trim().toUpperCase();
             const date = document.getElementById('trade-date').value;
             const amount = parseFloat(document.getElementById('position-amount').value);
