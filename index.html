@@ -1151,6 +1151,69 @@
             }, 300);
         };
         
+        function showTradeNotes() {
+            toggleSidebar();
+            if (trades.length === 0) {
+                alert('目前沒有交易紀錄！');
+                return;
+            }
+            
+            let html = '<div class="fixed inset-0 bg-black/80 z-[300] flex items-center justify-center p-4" onclick="this.remove()">';
+            html += '<div onclick="event.stopImmediatePropagation()" class="bg-slate-900 rounded-3xl w-full max-w-6xl max-h-[90vh] overflow-auto p-6">';
+            html += '<div class="flex justify-between items-center mb-6"><h2 class="text-2xl font-bold">交易筆記</h2><button onclick="this.closest(\'.fixed\').remove()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-times text-xl"></i></button></div>';
+            html += '<div class="space-y-4">';
+            
+            trades.forEach(trade => {
+                const dateStr = trade.date ? new Date(trade.date).toLocaleDateString('zh-TW') : '';
+                const note = trade.note || '';
+                
+                html += `
+                <div class="bg-slate-800 rounded-2xl p-5">
+                    <div class="flex justify-between items-start mb-3">
+                        <div>
+                            <span class="font-mono text-xl text-blue-400">${trade.symbol}</span>
+                            <span class="ml-3 text-xs px-2 py-0.5 bg-slate-700 rounded">${dateStr}</span>
+                        </div>
+                        <button onclick="saveTradeNote('${trade.id}', this)" class="px-4 py-1 text-xs bg-emerald-600 hover:bg-emerald-700 rounded-full">儲存筆記</button>
+                    </div>
+                    
+                    <textarea class="w-full h-24 bg-slate-900 border border-slate-600 rounded-2xl p-3 text-sm resize-y" placeholder="寫下你對這筆交易的體會...（100字一行，300字後會出現捲軸）" data-trade-id="${trade.id}">${note}</textarea>
+                    <div class="text-xs text-slate-500 mt-1">💡 100字為一行，超過300字會自動出現捲軸</div>
+                </div>`;
+            });
+            
+            html += '</div></div></div>';
+            document.body.insertAdjacentHTML('beforeend', html);
+        }
+        
+        async function saveTradeNote(tradeId, btn) {
+            const textarea = btn.parentElement.parentElement.querySelector('textarea');
+            const noteText = textarea.value.trim();
+            
+            if (!noteText) {
+                alert('請輸入筆記內容');
+                return;
+            }
+            
+            try {
+                await db.collection('users').doc(currentUser.uid).collection('trades').doc(tradeId).update({
+                    note: noteText
+                });
+                
+                const trade = trades.find(t => t.id === tradeId);
+                if (trade) trade.note = noteText;
+                
+                btn.textContent = '已儲存 ✓';
+                btn.classList.add('bg-emerald-700');
+                setTimeout(() => {
+                    btn.textContent = '儲存筆記';
+                    btn.classList.remove('bg-emerald-700');
+                }, 1500);
+            } catch (error) {
+                alert('儲存失敗：' + error.message);
+            }
+        }
+        
         console.log('%c[StockJournal] 最終穩定版本已載入 ✅', 'color:#22c55e');
     </script>
 </body>
