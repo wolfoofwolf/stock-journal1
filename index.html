@@ -983,7 +983,19 @@
             const dateInput = document.getElementById('trade-date');
             if (dateInput) dateInput.value = new Date().toISOString().split('T')[0];
             
+            // Force check login state on load - prevent stuck in main screen
             setTimeout(() => {
+                if (!currentUser) {
+                    const loginScreen = document.getElementById('login-screen');
+                    const mainApp = document.getElementById('main-app');
+                    
+                    if (loginScreen) loginScreen.style.display = 'flex';
+                    if (mainApp) {
+                        mainApp.classList.add('hidden');
+                        mainApp.classList.remove('block');
+                    }
+                }
+                
                 const longBtn = document.getElementById('type-long');
                 if (longBtn) longBtn.classList.add('active', 'border-blue-500');
                 currentTradeType = 'long';
@@ -991,8 +1003,9 @@
                 const winLabel = document.getElementById('outcome-win');
                 if (winLabel) winLabel.classList.add('!border-emerald-500', 'bg-emerald-900/30');
                 
-                document.getElementById('filter-all').classList.add('active', 'bg-blue-600');
-            }, 300);
+                const filterAll = document.getElementById('filter-all');
+                if (filterAll) filterAll.classList.add('active', 'bg-blue-600');
+            }, 500);
         };
         
         console.log('%c[StockJournal] 最終修復版本已載入 ✅', 'color:#22c55e');
