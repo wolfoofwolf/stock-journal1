@@ -150,7 +150,7 @@
         
         <div class="max-w-7xl mx-auto p-5">
             <!-- Stats Cards -->
-            <div class="grid grid-cols-2 md:grid-cols-3 gap-4 mb-8">
+            <div id="stats-row" class="grid grid-cols-2 md:grid-cols-3 gap-4 mb-8 transition-all duration-500 overflow-hidden">
                 <div class="finance-card bg-slate-900 border border-slate-700 rounded-3xl p-5">
                     <div class="flex justify-between items-start">
                         <div>
@@ -208,8 +208,16 @@
                 </div>
             </div>
             
+            <div class="flex justify-end mb-2">
+                <button onclick="toggleStatsRow()" id="stats-toggle-btn"
+                        class="flex items-center gap-x-2 px-4 py-1.5 text-xs bg-slate-800 hover:bg-slate-700 text-slate-400 rounded-2xl transition-all">
+                    <i class="fa-solid fa-eye-slash"></i>
+                    <span>隱藏統計</span>
+                </button>
+            </div>
+            
             <!-- Win/Loss + Type Win Rates -->
-            <div class="grid grid-cols-2 md:grid-cols-3 gap-4 mb-8">
+            <div id="stats-row" class="grid grid-cols-2 md:grid-cols-3 gap-4 mb-8 transition-all duration-500 overflow-hidden">
                 <div class="finance-card bg-emerald-900/30 border border-emerald-700 rounded-3xl p-5">
                     <div class="flex justify-between items-start">
                         <div>
@@ -949,6 +957,27 @@
                 </div>
             `;
             document.body.insertAdjacentHTML('beforeend', html);
+        }
+        
+        let statsHidden = false;
+        
+        function toggleStatsRow() {
+            const row = document.getElementById('stats-row');
+            const btn = document.getElementById('stats-toggle-btn');
+            
+            if (!statsHidden) {
+                // Hide
+                row.style.maxHeight = '0px';
+                row.style.opacity = '0';
+                btn.innerHTML = `<i class="fa-solid fa-eye"></i><span class="ml-2">顯示統計</span>`;
+                statsHidden = true;
+            } else {
+                // Show
+                row.style.maxHeight = '200px';
+                row.style.opacity = '1';
+                btn.innerHTML = `<i class="fa-solid fa-eye-slash"></i><span class="ml-2">隱藏統計</span>`;
+                statsHidden = false;
+            }
         }
         
         function showToast(msg) {
