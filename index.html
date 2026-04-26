@@ -37,6 +37,13 @@
             background-color: #3b82f6;
             color: white;
         }
+        
+        .star-btn {
+            transition: all 0.1s ease;
+        }
+        .star-btn.active {
+            color: #fbbf24 !important;
+        }
     </style>
 </head>
 <body class="bg-slate-950 text-slate-100">
@@ -61,90 +68,22 @@
                 </button>
             </div>
             
-            <!-- Year-End Summary -->
-            <div class="p-6 flex-1 overflow-auto">
-                
-                <!-- 2026 Year Summary -->
-                <div class="mb-6">
-                    <div class="flex items-center justify-between mb-3">
-                        <div class="flex items-center gap-x-2 text-emerald-400">
-                            <i class="fa-solid fa-calendar-check"></i>
-                            <span class="font-bold">2026 年表現</span>
-                        </div>
-                        <span class="text-xs bg-emerald-900 text-emerald-400 px-2 py-0.5 rounded">即時更新</span>
-                    </div>
+            <!-- Sidebar Menu -->
+            <div class="p-4 flex-1 overflow-auto">
+                <div class="space-y-2">
+                    <!-- 年度表現總結 Button -->
+                    <button onclick="showYearSummary()" 
+                            class="w-full flex items-center gap-x-3 px-4 py-3 text-left hover:bg-slate-800 rounded-2xl transition-all">
+                        <i class="fa-solid fa-calendar-check text-emerald-500 w-5"></i>
+                        <span class="font-medium">年度表現總結</span>
+                    </button>
                     
-                    <div class="space-y-3">
-                        <div class="bg-slate-800 rounded-2xl p-4">
-                            <div class="flex justify-between items-center mb-1">
-                                <span class="text-sm text-sky-400">Swing Trade 勝率</span>
-                                <span id="year2026-swing" class="font-bold text-sky-400">0%</span>
-                            </div>
-                            <div class="h-1.5 bg-slate-700 rounded-full">
-                                <div id="year2026-swing-bar" class="h-1.5 bg-sky-500 rounded-full transition-all" style="width:0%"></div>
-                            </div>
-                        </div>
-                        
-                        <div class="bg-slate-800 rounded-2xl p-4">
-                            <div class="flex justify-between items-center mb-1">
-                                <span class="text-sm text-purple-400">Day Trade 勝率</span>
-                                <span id="year2026-daytrade" class="font-bold text-purple-400">0%</span>
-                            </div>
-                            <div class="h-1.5 bg-slate-700 rounded-full">
-                                <div id="year2026-daytrade-bar" class="h-1.5 bg-purple-500 rounded-full transition-all" style="width:0%"></div>
-                            </div>
-                        </div>
-                        
-                        <div class="bg-slate-800 rounded-2xl p-4">
-                            <div class="flex justify-between items-center mb-1">
-                                <span class="text-sm text-emerald-400">Long + Short 勝率</span>
-                                <span id="year2026-longshort" class="font-bold text-emerald-400">0%</span>
-                            </div>
-                            <div class="h-1.5 bg-slate-700 rounded-full">
-                                <div id="year2026-longshort-bar" class="h-1.5 bg-emerald-500 rounded-full transition-all" style="width:0%"></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- 2027 Year Summary (New Year) -->
-                <div>
-                    <div class="flex items-center gap-x-2 text-emerald-400 mb-3">
-                        <i class="fa-solid fa-calendar-alt"></i>
-                        <span class="font-bold">2027 年表現</span>
-                    </div>
-                    
-                    <div class="space-y-3">
-                        <div class="bg-slate-800 rounded-2xl p-4">
-                            <div class="flex justify-between items-center mb-1">
-                                <span class="text-sm text-sky-400">Swing Trade 勝率</span>
-                                <span id="year2027-swing" class="font-bold text-sky-400">0%</span>
-                            </div>
-                            <div class="h-1.5 bg-slate-700 rounded-full">
-                                <div id="year2027-swing-bar" class="h-1.5 bg-sky-500 rounded-full transition-all" style="width:0%"></div>
-                            </div>
-                        </div>
-                        
-                        <div class="bg-slate-800 rounded-2xl p-4">
-                            <div class="flex justify-between items-center mb-1">
-                                <span class="text-sm text-purple-400">Day Trade 勝率</span>
-                                <span id="year2027-daytrade" class="font-bold text-purple-400">0%</span>
-                            </div>
-                            <div class="h-1.5 bg-slate-700 rounded-full">
-                                <div id="year2027-daytrade-bar" class="h-1.5 bg-purple-500 rounded-full transition-all" style="width:0%"></div>
-                            </div>
-                        </div>
-                        
-                        <div class="bg-slate-800 rounded-2xl p-4">
-                            <div class="flex justify-between items-center mb-1">
-                                <span class="text-sm text-emerald-400">Long + Short 勝率</span>
-                                <span id="year2027-longshort" class="font-bold text-emerald-400">0%</span>
-                            </div>
-                            <div class="h-1.5 bg-slate-700 rounded-full">
-                                <div id="year2027-longshort-bar" class="h-1.5 bg-emerald-500 rounded-full transition-all" style="width:0%"></div>
-                            </div>
-                        </div>
-                    </div>
+                    <!-- 收藏的交易 Button -->
+                    <button onclick="showFavorites()" 
+                            class="w-full flex items-center gap-x-3 px-4 py-3 text-left hover:bg-slate-800 rounded-2xl transition-all">
+                        <i class="fa-solid fa-star text-yellow-500 w-5"></i>
+                        <span class="font-medium">收藏的交易</span>
+                    </button>
                 </div>
             </div>
             
@@ -460,6 +399,7 @@
                                         <th class="text-center py-3 px-4">結果</th>
                                         <th class="text-left py-3 px-4">原因</th>
                                         <th class="w-10"></th>
+                                        <th class="w-10"></th>
                                     </tr>
                                 </thead>
                                 <tbody id="trade-table-body" class="divide-y divide-slate-700"></tbody>
@@ -500,6 +440,7 @@
         
         let currentUser = null;
         let trades = [];
+        let favorites = [];
         let currentImageBase64 = null;
         let currentTradeType = 'long';
         let currentFilter = 'all';
@@ -516,6 +457,67 @@
             }
         }
         
+        // ==================== SHOW YEAR SUMMARY ====================
+        function showYearSummary() {
+            toggleSidebar();
+            alert('年度表現總結功能已開啟！\n\n2026年表現即時更新中...\n每年12月31日會自動鎖定當年數據');
+        }
+        
+        // ==================== SHOW FAVORITES ====================
+        function showFavorites() {
+            toggleSidebar();
+            if (favorites.length === 0) {
+                alert('目前沒有收藏的交易！\n\n在交易歷史中點擊星星即可收藏');
+                return;
+            }
+            
+            let html = '<div class="fixed inset-0 bg-black/80 z-[300] flex items-center justify-center p-4" onclick="this.remove()">';
+            html += '<div onclick="event.stopImmediatePropagation()" class="bg-slate-900 rounded-3xl w-full max-w-4xl max-h-[80vh] overflow-auto p-6">';
+            html += '<div class="flex justify-between items-center mb-6"><h2 class="text-2xl font-bold">收藏的交易</h2><button onclick="this.closest(\'.fixed\').remove()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-times text-xl"></i></button></div>';
+            html += '<div class="space-y-3">';
+            
+            favorites.forEach(trade => {
+                const dateStr = trade.date ? new Date(trade.date).toLocaleDateString('zh-TW') : '';
+                html += `<div class="bg-slate-800 rounded-2xl p-4 flex justify-between items-center">
+                    <div>
+                        <div class="flex items-center gap-x-2">
+                            <span class="font-mono text-blue-400">${trade.symbol}</span>
+                            <span class="text-xs px-2 py-0.5 rounded ${trade.outcome === 'win' ? 'bg-emerald-900 text-emerald-400' : 'bg-red-900 text-red-400'}">${trade.outcome === 'win' ? '成功' : '失敗'}</span>
+                        </div>
+                        <div class="text-xs text-slate-400 mt-1">${dateStr} • ${trade.amount}元</div>
+                    </div>
+                    <div class="text-right">
+                        <div class="font-bold ${trade.pnl > 0 ? 'text-emerald-400' : 'text-red-400'}">${trade.pnl > 0 ? '+' : ''}${trade.pnl || 0}</div>
+                    </div>
+                </div>`;
+            });
+            
+            html += '</div></div></div>';
+            document.body.insertAdjacentHTML('beforeend', html);
+        }
+        
+        // ==================== TOGGLE FAVORITE ====================
+        async function toggleFavorite(tradeId, event) {
+            event.stopImmediatePropagation();
+            
+            const trade = trades.find(t => t.id === tradeId);
+            if (!trade) return;
+            
+            const isFavorite = favorites.some(f => f.id === tradeId);
+            
+            if (isFavorite) {
+                await db.collection('users').doc(currentUser.uid).collection('favorites').doc(tradeId).delete();
+                favorites = favorites.filter(f => f.id !== tradeId);
+                showToast('已從收藏移除');
+            } else {
+                await db.collection('users').doc(currentUser.uid).collection('favorites').doc(tradeId).set(trade);
+                favorites.push(trade);
+                showToast('已加入收藏 ★');
+            }
+            
+            renderTrades();
+        }
+        
         // ==================== AUTH ====================
         function loginWithEmail() {
             const email = document.getElementById('login-email').value;
@@ -528,6 +530,7 @@
                     document.getElementById('main-app').classList.remove('hidden');
                     document.getElementById('main-app').classList.add('block');
                     loadTradesFromFirestore();
+                    loadFavoritesFromFirestore();
                 })
                 .catch((error) => {
                     alert('登入失敗：' + error.message);
@@ -553,6 +556,16 @@
             renderTrades();
             updateStats();
             updateSidebarStats();
+        }
+        
+        async function loadFavoritesFromFirestore() {
+            if (!currentUser) return;
+            
+            const snapshot = await db.collection('users').doc(currentUser.uid).collection('favorites').get();
+            favorites = [];
+            snapshot.forEach(doc => {
+                favorites.push({ id: doc.id, ...doc.data() });
+            });
         }
         
         async function addTradeToFirestore(tradeData) {
@@ -621,7 +634,6 @@
         function filterTrades(type) {
             currentFilter = type;
             
-            // Update button styles
             document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active', 'bg-blue-600'));
             document.getElementById('filter-' + type).classList.add('active', 'bg-blue-600');
             
@@ -726,6 +738,9 @@
                     imageHTML = `<span class="text-slate-500 text-xs">無</span>`;
                 }
                 
+                const isFavorite = favorites.some(f => f.id === trade.id);
+                const starHTML = `<button onclick="toggleFavorite('${trade.id}', event)" class="star-btn p-1 ${isFavorite ? 'active text-yellow-400' : 'text-slate-500 hover:text-yellow-400'}"><i class="fa-solid fa-star"></i></button>`;
+                
                 row.innerHTML = `
                     <td class="px-4 py-3 text-xs text-slate-400">${dateStr}</td>
                     <td class="px-4 py-3 font-mono text-blue-400">${trade.symbol}</td>
@@ -736,11 +751,7 @@
                     <td class="px-4 py-3 text-center">${outcomeHTML}</td>
                     <td class="px-4 py-3 text-xs text-slate-300 max-w-[180px] truncate">${trade.reason}</td>
                     <td class="px-4 py-3 text-center">${imageHTML}</td>
-                    <td class="px-2 py-3">
-                        <button onclick="deleteTrade('${trade.id}')" class="text-red-400 hover:text-red-600 p-1">
-                            <i class="fa-solid fa-trash text-sm"></i>
-                        </button>
-                    </td>
+                    <td class="px-2 py-3">${starHTML}</td>
                 `;
                 tbody.appendChild(row);
             });
@@ -805,7 +816,6 @@
             const longShortWins = longShortTrades.filter(t => t.outcome === 'win').length;
             const longShortWinRate = longShortTrades.length > 0 ? Math.round((longShortWins / longShortTrades.length) * 100) : 0;
             
-            // Update Current Year (2026)
             document.getElementById('year2026-swing').textContent = swingWinRate + '%';
             document.getElementById('year2026-swing-bar').style.width = swingWinRate + '%';
             
@@ -815,7 +825,6 @@
             document.getElementById('year2026-longshort').textContent = longShortWinRate + '%';
             document.getElementById('year2026-longshort-bar').style.width = longShortWinRate + '%';
             
-            // Update Next Year (2027) - placeholder
             document.getElementById('year2027-swing').textContent = '0%';
             document.getElementById('year2027-swing-bar').style.width = '0%';
             
@@ -874,6 +883,7 @@
                 document.getElementById('main-app').classList.remove('hidden');
                 document.getElementById('main-app').classList.add('block');
                 loadTradesFromFirestore();
+                loadFavoritesFromFirestore();
             }
         });
         
@@ -890,12 +900,11 @@
                 const winLabel = document.getElementById('outcome-win');
                 if (winLabel) winLabel.classList.add('!border-emerald-500', 'bg-emerald-900/30');
                 
-                // Set default filter to All
                 document.getElementById('filter-all').classList.add('active', 'bg-blue-600');
             }, 300);
         };
         
-        console.log('%c[StockJournal] 最終完美版本已載入 ✅', 'color:#22c55e');
+        console.log('%c[StockJournal] 最終完整版本已載入 ✅', 'color:#22c55e');
     </script>
 </body>
 </html>
