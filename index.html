@@ -625,7 +625,10 @@
         
         async function addTradeToFirestore(tradeData) {
             if (!currentUser) {
-                alert('請先登入！');
+                alert('⚠️ 偵測到你已登出，請重新登入！');
+                // Force show login screen
+                document.getElementById('login-screen').style.display = 'flex';
+                document.getElementById('main-app').classList.add('hidden');
                 return;
             }
             
@@ -634,7 +637,13 @@
                 await loadTradesFromFirestore();
                 showToast('✅ 已成功儲存到雲端！');
             } catch (error) {
-                alert('儲存失敗：' + error.message);
+                console.error('Firestore Error:', error);
+                
+                if (error.code === 'permission-denied') {
+                    alert('❌ 儲存失敗：權限不足\n請確認 Firestore 安全規則是否正確設定');
+                } else {
+                    alert('❌ 儲存失敗：' + error.message);
+                }
             }
         }
         
