@@ -433,7 +433,7 @@
                                         <th class="text-center py-3 px-4">類型</th>
                                         <th class="text-center py-3 px-4">R:R</th>
                                         <th class="text-center py-3 px-4 ">結果</th>
-                                        <th class="text-left py-3 px-4">原因</th>
+                                        <th class="text-left py-3 px-4 ">原因</th>
                                         <th class="w-10"></th>
                                         <th class="w-10"></th>
                                         <th class="w-10"></th>
@@ -841,7 +841,13 @@
                     <td class="px-4 py-3 text-center ">${typeHTML}</td>
                     <td class="px-4 py-3 text-center text-xs text-purple-400">${trade.riskReward}</td>
                     <td class="px-4 py-3 text-center ">${outcomeHTML}</td>
-                    <td class="px-4 py-3 text-xs text-slate-300 max-w-[180px] truncate cursor-pointer hover:text-white reason-cell" data-reason="${trade.reason.replace(/"/g, '&quot;')}">${trade.reason}</td>
+                    <td class="px-4 py-3 text-center">
+                        <button onclick="showReasonModal('${trade.reason.replace(/'/g, "\\'")}'); event.stopImmediatePropagation();" 
+                                class="px-3 py-1 text-xs bg-slate-700 hover:bg-slate-600 rounded-full flex items-center gap-x-1.5 text-slate-300">
+                            <i class="fa-solid fa-file-alt text-[10px]"></i>
+                            <span>查看</span>
+                        </button>
+                    </td>
                     <td class="px-4 py-3 text-center ">${imageHTML}</td>
                     <td class="px-2 py-3">${starHTML}</td>
                     <td class="px-2 py-3">${deleteHTML}</td>
