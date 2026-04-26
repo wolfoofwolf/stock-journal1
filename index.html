@@ -805,7 +805,7 @@
                     <td class="px-4 py-3 text-center">${typeHTML}</td>
                     <td class="px-4 py-3 text-center text-xs text-purple-400">${trade.riskReward}</td>
                     <td class="px-4 py-3 text-center">${outcomeHTML}</td>
-                    <td class="px-4 py-3 text-xs text-slate-300 max-w-[180px] truncate">${trade.reason}</td>
+                    <td class="px-4 py-3 text-xs text-slate-300 max-w-[180px] truncate cursor-pointer hover:text-white" onclick="showReasonModal('${trade.reason.replace(/'/g, "\'")})'">${trade.reason}</td>
                     <td class="px-4 py-3 text-center">${imageHTML}</td>
                     <td class="px-2 py-3">${starHTML}</td>
                     <td class="px-2 py-3">${deleteHTML}</td>
@@ -882,6 +882,25 @@
             const modal = document.getElementById('image-modal');
             modal.style.display = 'none';
             modal.classList.add('hidden');
+        }
+        
+        function showReasonModal(reason) {
+            const html = `
+                <div class="fixed inset-0 bg-black/80 z-[400] flex items-center justify-center p-4" onclick="this.remove()">
+                    <div onclick="event.stopImmediatePropagation()" class="bg-slate-900 rounded-3xl max-w-lg w-full p-6 border border-slate-700">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-xl font-bold">交易原因</h3>
+                            <button onclick="this.closest('.fixed').remove()" class="text-slate-400 hover:text-white">
+                                <i class="fa-solid fa-times text-xl"></i>
+                            </button>
+                        </div>
+                        <div class="bg-slate-800 rounded-2xl p-4 text-sm whitespace-pre-wrap break-words">
+                            ${reason}
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.body.insertAdjacentHTML('beforeend', html);
         }
         
         function showToast(msg) {
