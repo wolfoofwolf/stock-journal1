@@ -817,7 +817,9 @@
                 const amountStr = trade.amount ? trade.amount.toLocaleString() : '0';
                 const pnlStr = trade.pnl ? (trade.pnl > 0 ? `+${trade.pnl.toLocaleString()}` : trade.pnl.toLocaleString()) : '0';
                 const pnlColor = trade.pnl > 0 ? 'text-emerald-400' : (trade.pnl < 0 ? 'text-red-400' : 'text-slate-400');
-                const outcomeHTML = trade.outcome === 'win' ? `<span class="win-badge">成功</span>` : `<span class="loss-badge">失敗</span>`;
+                const outcomeHTML = trade.outcome === 'win' 
+                    ? `<span class="inline-flex items-center justify-center w-7 h-7 bg-emerald-500 rounded-full"><i class="fa-solid fa-check text-white text-sm"></i></span>` 
+                    : `<span class="inline-flex items-center justify-center w-7 h-7 bg-red-500 rounded-full"><i class="fa-solid fa-times text-white text-sm"></i></span>`;
                 
                 let typeHTML = '';
                 if (trade.tradeType === 'short') typeHTML = `<span class="px-2 py-0.5 text-xs bg-orange-900 text-emerald-400 rounded">Short</span>`;
