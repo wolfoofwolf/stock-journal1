@@ -568,8 +568,13 @@
                             </div>
                         </div>
                         
-                        <div class="ml-4">
+                        <div class="ml-4 flex flex-col items-end gap-y-2">
                             ${imageHTML}
+                            <button onclick="deleteFavorite('${trade.id}', event)" 
+                                    class="text-red-400 hover:text-red-600 text-xs flex items-center gap-x-1 mt-2">
+                                <i class="fa-solid fa-trash"></i>
+                                <span>刪除</span>
+                            </button>
                         </div>
                     </div>
                 </div>`;
@@ -597,6 +602,23 @@
                 showToast('已加入收藏 ★');
             }
             
+            renderTrades();
+        }
+        
+        async function deleteFavorite(tradeId, event) {
+            event.stopImmediatePropagation();
+            
+            if (!confirm('確定要從收藏中刪除這筆交易嗎？')) return;
+            
+            await db.collection('users').doc(currentUser.uid).collection('favorites').doc(tradeId).delete();
+            favorites = favorites.filter(f => f.id !== tradeId);
+            showToast('已從收藏刪除');
+            
+            // Refresh the favorites modal
+            const modal = event.target.closest('.fixed');
+            if (modal) modal.remove();
+            showFavorites();
+        }
             renderTrades();
         }
         
@@ -689,7 +711,18 @@
         
         async function deleteTradeFromFirestore(id) {
             if (!currentUser) return;
+            
+            // Delete from trades
             await db.collection('users').doc(currentUser.uid).collection('trades').doc(id).delete();
+            
+            // Also delete from favorites if it exists there
+            try {
+                await db.collection('users').doc(currentUser.uid).collection('favorites').doc(id).delete();
+                favorites = favorites.filter(f => f.id !== id);
+            } catch (e) {
+                // Ignore if it doesn't exist in favorites
+            }
+            
             await loadTradesFromFirestore();
         }
         
