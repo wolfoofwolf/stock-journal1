@@ -814,8 +814,17 @@
                 row.className = 'hover:bg-slate-800';
                 
                 const dateStr = trade.date ? new Date(trade.date).toLocaleDateString('zh-TW') : '';
-                const amountStr = trade.amount ? trade.amount.toLocaleString() : '0';
-                const pnlStr = trade.pnl ? (trade.pnl > 0 ? `+${trade.pnl.toLocaleString()}` : trade.pnl.toLocaleString()) : '0';
+                let amountDisplay = trade.amount ? trade.amount.toLocaleString() : '0';
+                let pnlDisplay = trade.pnl ? (trade.pnl > 0 ? `+${trade.pnl.toLocaleString()}` : trade.pnl.toLocaleString()) : '0';
+                
+                // If more than 6 digits, make it a toggle button
+                if (trade.amount && trade.amount.toString().length > 6) {
+                    amountDisplay = `<button onclick="toggleAmount(this, '${trade.amount.toLocaleString()}')" class="text-blue-400 hover:text-blue-300 font-mono">顯示金額</button>`;
+                }
+                if (trade.pnl && Math.abs(trade.pnl).toString().length > 6) {
+                    const pnlValue = trade.pnl > 0 ? `+${trade.pnl.toLocaleString()}` : trade.pnl.toLocaleString();
+                    pnlDisplay = `<button onclick="toggleAmount(this, '${pnlValue}')" class="${pnlColor} hover:opacity-80 font-mono">顯示金額</button>`;
+                }
                 const pnlColor = trade.pnl > 0 ? 'text-emerald-400' : (trade.pnl < 0 ? 'text-red-400' : 'text-slate-400');
                 const outcomeHTML = trade.outcome === 'win' 
                     ? `<span class="inline-flex items-center justify-center w-7 h-7 bg-emerald-500 rounded-full"><i class="fa-solid fa-check text-white text-sm"></i></span>` 
@@ -836,8 +845,8 @@
                 row.innerHTML = `
                     <td class="px-4 py-3 text-xs text-slate-400">${dateStr}</td>
                     <td class="px-4 py-3 font-mono text-blue-400">${trade.symbol}</td>
-                    <td class="px-4 py-3 text-right font-semibold">${amountStr}</td>
-                    <td class="px-4 py-3 text-right font-semibold ${pnlColor}">${pnlStr}</td>
+                    <td class="px-4 py-3 text-right font-semibold">${amountDisplay}</td>
+                    <td class="px-4 py-3 text-right font-semibold ${pnlColor}">${pnlDisplay}</td>
                     <td class="px-4 py-3 text-center ">${typeHTML}</td>
                     <td class="px-4 py-3 text-center text-xs text-purple-400">${trade.riskReward}</td>
                     <td class="px-4 py-3 text-center ">${outcomeHTML}</td>
@@ -989,6 +998,16 @@
                 row.style.opacity = '1';
                 btn.innerHTML = `<i class="fa-solid fa-eye-slash"></i><span class="ml-2">隱藏統計</span>`;
                 statsHidden = false;
+            }
+        }
+        
+        function toggleAmount(btn, fullValue) {
+            if (btn.textContent === '顯示金額') {
+                btn.textContent = fullValue;
+                btn.style.fontSize = '0.875rem';
+            } else {
+                btn.textContent = '顯示金額';
+                btn.style.fontSize = '';
             }
         }
         
