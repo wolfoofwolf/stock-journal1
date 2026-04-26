@@ -22,12 +22,20 @@
         .type-btn { transition: all 0.1s ease; }
         .type-btn.active { background-color: #3b82f6; color: white; border-color: #3b82f6; }
         
-        /* Smooth Sidebar Animation */
+        /* Smooth Sidebar Animation - 1.5s */
         #sidebar {
-            transition: transform 0.5s cubic-bezier(0.32, 0.72, 0, 1);
+            transition: transform 1.5s cubic-bezier(0.32, 0.72, 0, 1);
         }
         .sidebar-hidden {
             transform: translateX(-100%);
+        }
+        
+        .filter-btn {
+            transition: all 0.1s ease;
+        }
+        .filter-btn.active {
+            background-color: #3b82f6;
+            color: white;
         }
     </style>
 </head>
@@ -250,8 +258,28 @@
                 </div>
             </div>
             
-            <!-- Day Trade & Swing Win Rate -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+            <!-- Win/Loss Count + Day Trade & Swing Win Rate -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+                <div class="finance-card bg-emerald-900/30 border border-emerald-700 rounded-3xl p-6">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-sm text-emerald-400">成功筆數</p>
+                            <div id="win-count" class="text-5xl font-bold mt-1 text-emerald-400">0</div>
+                        </div>
+                        <i class="fa-solid fa-check-circle text-3xl text-emerald-500"></i>
+                    </div>
+                </div>
+                
+                <div class="finance-card bg-red-900/30 border border-red-700 rounded-3xl p-6">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-sm text-red-400">失敗筆數</p>
+                            <div id="loss-count" class="text-5xl font-bold mt-1 text-red-400">0</div>
+                        </div>
+                        <i class="fa-solid fa-times-circle text-3xl text-red-500"></i>
+                    </div>
+                </div>
+                
                 <div class="finance-card bg-slate-900 border border-slate-700 rounded-3xl p-6">
                     <div class="flex justify-between items-start">
                         <div>
@@ -401,6 +429,21 @@
                     <div class="finance-card bg-slate-900 border border-slate-700 rounded-3xl p-6 h-full">
                         <div class="flex justify-between items-center mb-4">
                             <h3 class="text-xl font-bold">交易歷史</h3>
+                            
+                            <!-- Filter Buttons -->
+                            <div class="flex gap-1 text-xs">
+                                <button onclick="filterTrades('all')" id="filter-all"
+                                        class="filter-btn active px-3 py-1 rounded-full bg-blue-600 text-white">全部</button>
+                                <button onclick="filterTrades('short')" id="filter-short"
+                                        class="filter-btn px-3 py-1 rounded-full bg-slate-700 hover:bg-slate-600">Short</button>
+                                <button onclick="filterTrades('long')" id="filter-long"
+                                        class="filter-btn px-3 py-1 rounded-full bg-slate-700 hover:bg-slate-600">Long</button>
+                                <button onclick="filterTrades('daytrade')" id="filter-daytrade"
+                                        class="filter-btn px-3 py-1 rounded-full bg-slate-700 hover:bg-slate-600">Day</button>
+                                <button onclick="filterTrades('swing')" id="filter-swing"
+                                        class="filter-btn px-3 py-1 rounded-full bg-slate-700 hover:bg-slate-600">Swing</button>
+                            </div>
+                            
                             <span id="history-count" class="text-xs bg-slate-700 px-3 py-1 rounded-full">0 筆</span>
                         </div>
                         
@@ -459,6 +502,7 @@
         let trades = [];
         let currentImageBase64 = null;
         let currentTradeType = 'long';
+        let currentFilter = 'all';
         
         // ==================== SIDEBAR TOGGLE ====================
         function toggleSidebar() {
@@ -573,6 +617,17 @@
             currentTradeType = type;
         }
         
+        // ==================== FILTER TRADES ====================
+        function filterTrades(type) {
+            currentFilter = type;
+            
+            // Update button styles
+            document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active', 'bg-blue-600'));
+            document.getElementById('filter-' + type).classList.add('active', 'bg-blue-600');
+            
+            renderTrades();
+        }
+        
         // ==================== UI FUNCTIONS ====================
         function selectOutcome(type) {
             const winLabel = document.getElementById('outcome-win');
@@ -637,10 +692,16 @@
             const tbody = document.getElementById('trade-table-body');
             const countEl = document.getElementById('history-count');
             
-            tbody.innerHTML = '';
-            countEl.textContent = `${trades.length} 筆`;
+            let filteredTrades = trades;
             
-            trades.forEach(trade => {
+            if (currentFilter !== 'all') {
+                filteredTrades = trades.filter(t => t.tradeType === currentFilter);
+            }
+            
+            tbody.innerHTML = '';
+            countEl.textContent = `${filteredTrades.length} 筆`;
+            
+            filteredTrades.forEach(trade => {
                 const row = document.createElement('tr');
                 row.className = 'hover:bg-slate-800';
                 
@@ -693,6 +754,7 @@
         function updateStats() {
             const total = trades.length;
             const wins = trades.filter(t => t.outcome === 'win').length;
+            const losses = trades.filter(t => t.outcome === 'loss').length;
             const winRate = total > 0 ? Math.round((wins / total) * 100) : 0;
             
             let currentCapital = 0;
@@ -713,6 +775,9 @@
             document.getElementById('total-win-rate-bar').style.width = winRate + '%';
             document.getElementById('total-capital').textContent = currentCapital.toLocaleString();
             document.getElementById('capital-change').innerHTML = `<span class="${pnlColor}">${pnlText}</span>`;
+            
+            document.getElementById('win-count').textContent = wins;
+            document.getElementById('loss-count').textContent = losses;
             
             let score = 50 + (wins * 5) - ((total - wins) * 3);
             score = Math.max(0, Math.min(100, score));
@@ -824,6 +889,9 @@
                 
                 const winLabel = document.getElementById('outcome-win');
                 if (winLabel) winLabel.classList.add('!border-emerald-500', 'bg-emerald-900/30');
+                
+                // Set default filter to All
+                document.getElementById('filter-all').classList.add('active', 'bg-blue-600');
             }, 300);
         };
         
