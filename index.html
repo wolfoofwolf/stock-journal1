@@ -809,23 +809,37 @@
             const longShortWins = longShortTrades.filter(t => t.outcome === 'win').length;
             const longShortWinRate = longShortTrades.length > 0 ? Math.round((longShortWins / longShortTrades.length) * 100) : 0;
             
-            document.getElementById('year2026-swing').textContent = swingWinRate + '%';
-            document.getElementById('year2026-swing-bar').style.width = swingWinRate + '%';
+            // Add null checks to prevent error when sidebar is closed
+            const swingEl = document.getElementById('year2026-swing');
+            const swingBar = document.getElementById('year2026-swing-bar');
+            const dayEl = document.getElementById('year2026-daytrade');
+            const dayBar = document.getElementById('year2026-daytrade-bar');
+            const longEl = document.getElementById('year2026-longshort');
+            const longBar = document.getElementById('year2026-longshort-bar');
             
-            document.getElementById('year2026-daytrade').textContent = dayWinRate + '%';
-            document.getElementById('year2026-daytrade-bar').style.width = dayWinRate + '%';
+            if (swingEl) swingEl.textContent = swingWinRate + '%';
+            if (swingBar) swingBar.style.width = swingWinRate + '%';
             
-            document.getElementById('year2026-longshort').textContent = longShortWinRate + '%';
-            document.getElementById('year2026-longshort-bar').style.width = longShortWinRate + '%';
+            if (dayEl) dayEl.textContent = dayWinRate + '%';
+            if (dayBar) dayBar.style.width = dayWinRate + '%';
             
-            document.getElementById('year2027-swing').textContent = '0%';
-            document.getElementById('year2027-swing-bar').style.width = '0%';
+            if (longEl) longEl.textContent = longShortWinRate + '%';
+            if (longBar) longBar.style.width = longShortWinRate + '%';
             
-            document.getElementById('year2027-daytrade').textContent = '0%';
-            document.getElementById('year2027-daytrade-bar').style.width = '0%';
+            // Next year placeholders (also with null check)
+            const nextSwing = document.getElementById('year2027-swing');
+            const nextSwingBar = document.getElementById('year2027-swing-bar');
+            const nextDay = document.getElementById('year2027-daytrade');
+            const nextDayBar = document.getElementById('year2027-daytrade-bar');
+            const nextLong = document.getElementById('year2027-longshort');
+            const nextLongBar = document.getElementById('year2027-longshort-bar');
             
-            document.getElementById('year2027-longshort').textContent = '0%';
-            document.getElementById('year2027-longshort-bar').style.width = '0%';
+            if (nextSwing) nextSwing.textContent = '0%';
+            if (nextSwingBar) nextSwingBar.style.width = '0%';
+            if (nextDay) nextDay.textContent = '0%';
+            if (nextDayBar) nextDayBar.style.width = '0%';
+            if (nextLong) nextLong.textContent = '0%';
+            if (nextLongBar) nextLongBar.style.width = '0%';
         }
         
         function exportToCSV() {
