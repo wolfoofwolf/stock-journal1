@@ -934,6 +934,11 @@
                 document.getElementById('main-app').classList.add('block');
                 loadTradesFromFirestore();
                 loadFavoritesFromFirestore();
+            } else {
+                // User is logged out - show login screen
+                document.getElementById('login-screen').style.display = 'flex';
+                document.getElementById('main-app').classList.add('hidden');
+                document.getElementById('main-app').classList.remove('block');
             }
         });
         
