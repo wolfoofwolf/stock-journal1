@@ -814,6 +814,7 @@
                 row.className = 'hover:bg-slate-800';
                 
                 const dateStr = trade.date ? new Date(trade.date).toLocaleDateString('zh-TW') : '';
+                const pnlColor = trade.pnl > 0 ? 'text-emerald-400' : (trade.pnl < 0 ? 'text-red-400' : 'text-slate-400');
                 let amountDisplay = trade.amount ? trade.amount.toLocaleString() : '0';
                 let pnlDisplay = trade.pnl ? (trade.pnl > 0 ? `+${trade.pnl.toLocaleString()}` : trade.pnl.toLocaleString()) : '0';
                 
@@ -825,7 +826,6 @@
                     const pnlValue = trade.pnl > 0 ? `+${trade.pnl.toLocaleString()}` : trade.pnl.toLocaleString();
                     pnlDisplay = `<button onclick="toggleAmount(this, '${pnlValue}')" class="${pnlColor} hover:opacity-80 font-mono">顯示金額</button>`;
                 }
-                const pnlColor = trade.pnl > 0 ? 'text-emerald-400' : (trade.pnl < 0 ? 'text-red-400' : 'text-slate-400');
                 const outcomeHTML = trade.outcome === 'win' 
                     ? `<span class="inline-flex items-center justify-center w-7 h-7 bg-emerald-500 rounded-full"><i class="fa-solid fa-check text-white text-sm"></i></span>` 
                     : `<span class="inline-flex items-center justify-center w-7 h-7 bg-red-500 rounded-full"><i class="fa-solid fa-times text-white text-sm"></i></span>`;
