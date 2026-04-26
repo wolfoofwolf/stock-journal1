@@ -631,29 +631,24 @@
                 return;
             }
             
-            // Disable button during login
-            const loginBtn = document.querySelector('#login-screen button');
-            if (loginBtn) {
-                loginBtn.disabled = true;
-                loginBtn.innerHTML = '登入中...';
-            }
-            
             auth.signInWithEmailAndPassword(email, password)
                 .then((userCredential) => {
                     currentUser = userCredential.user;
-                    document.getElementById('login-screen').style.display = 'none';
-                    document.getElementById('main-app').classList.remove('hidden');
-                    document.getElementById('main-app').classList.add('block');
+                    
+                    const loginScreen = document.getElementById('login-screen');
+                    if (loginScreen) loginScreen.style.display = 'none';
+                    
+                    const mainApp = document.getElementById('main-app');
+                    if (mainApp) {
+                        mainApp.classList.remove('hidden');
+                        mainApp.classList.add('block');
+                    }
+                    
                     loadTradesFromFirestore();
                     loadFavoritesFromFirestore();
                 })
                 .catch((error) => {
                     alert('登入失敗：' + error.message);
-                    // Re-enable button
-                    if (loginBtn) {
-                        loginBtn.disabled = false;
-                        loginBtn.innerHTML = '登入';
-                    }
                 });
         }
         
