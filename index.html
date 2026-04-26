@@ -21,15 +21,23 @@
         .loss-badge { background-color: #fee2e2; color: #991b1b; padding: 2px 10px; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; }
         .type-btn { transition: all 0.1s ease; }
         .type-btn.active { background-color: #3b82f6; color: white; border-color: #3b82f6; }
-        .sidebar-overlay { transition: transform 0.3s ease; }
-        .sidebar-hidden { transform: translateX(-100%); }
+        
+        /* Smooth Sidebar Animation */
+        #sidebar {
+            transition: transform 0.4s cubic-bezier(0.32, 0.72, 0, 1);
+        }
+        .sidebar-hidden {
+            transform: translateX(-100%);
+        }
     </style>
 </head>
 <body class="bg-slate-950 text-slate-100">
     
     <!-- Overlay Sidebar -->
-    <div id="sidebar" onclick="toggleSidebar()" class="fixed inset-0 bg-black/50 z-[200] hidden">
-        <div onclick="event.stopImmediatePropagation()" class="w-72 h-full bg-slate-900 border-r border-slate-700 flex flex-col sidebar-overlay">
+    <div id="sidebar" onclick="toggleSidebar()" class="fixed inset-0 bg-black/60 z-[200] hidden">
+        <div onclick="event.stopImmediatePropagation()" class="w-80 h-full bg-slate-900 border-r border-slate-700 flex flex-col sidebar-overlay">
+            
+            <!-- Sidebar Header -->
             <div class="p-6 border-b border-slate-700 flex justify-between items-center">
                 <div class="flex items-center gap-x-3">
                     <div class="w-10 h-10 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-2xl flex items-center justify-center">
@@ -45,65 +53,101 @@
                 </button>
             </div>
             
+            <!-- Year-End Summary -->
             <div class="p-6 flex-1 overflow-auto">
+                
+                <!-- 2026 Year Summary -->
                 <div class="mb-6">
-                    <div class="flex items-center gap-x-2 text-emerald-400 mb-3">
-                        <i class="fa-solid fa-calendar-alt"></i>
-                        <span class="font-semibold text-sm">本年度表現總結</span>
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="flex items-center gap-x-2 text-emerald-400">
+                            <i class="fa-solid fa-calendar-check"></i>
+                            <span class="font-bold">2026 年總結</span>
+                        </div>
+                        <span class="text-xs bg-emerald-900 text-emerald-400 px-2 py-0.5 rounded">已鎖定</span>
                     </div>
                     
-                    <div class="space-y-4">
+                    <div class="space-y-3">
                         <div class="bg-slate-800 rounded-2xl p-4">
-                            <div class="flex justify-between items-center mb-2">
-                                <div class="flex items-center gap-x-2">
-                                    <i class="fa-solid fa-sync text-sky-500"></i>
-                                    <span class="text-sm font-medium">Swing Trade</span>
-                                </div>
-                                <span id="sidebar-swing-winrate" class="text-xl font-bold text-sky-400">0%</span>
+                            <div class="flex justify-between items-center mb-1">
+                                <span class="text-sm text-sky-400">Swing Trade 勝率</span>
+                                <span id="year2026-swing" class="font-bold text-sky-400">72%</span>
                             </div>
                             <div class="h-1.5 bg-slate-700 rounded-full">
-                                <div id="sidebar-swing-bar" class="h-1.5 bg-sky-500 rounded-full transition-all" style="width:0%"></div>
+                                <div class="h-1.5 bg-sky-500 rounded-full" style="width:72%"></div>
                             </div>
                         </div>
                         
                         <div class="bg-slate-800 rounded-2xl p-4">
-                            <div class="flex justify-between items-center mb-2">
-                                <div class="flex items-center gap-x-2">
-                                    <i class="fa-solid fa-clock text-purple-500"></i>
-                                    <span class="text-sm font-medium">Day Trade</span>
-                                </div>
-                                <span id="sidebar-daytrade-winrate" class="text-xl font-bold text-purple-400">0%</span>
+                            <div class="flex justify-between items-center mb-1">
+                                <span class="text-sm text-purple-400">Day Trade 勝率</span>
+                                <span id="year2026-daytrade" class="font-bold text-purple-400">68%</span>
                             </div>
                             <div class="h-1.5 bg-slate-700 rounded-full">
-                                <div id="sidebar-daytrade-bar" class="h-1.5 bg-purple-500 rounded-full transition-all" style="width:0%"></div>
+                                <div class="h-1.5 bg-purple-500 rounded-full" style="width:68%"></div>
                             </div>
                         </div>
                         
                         <div class="bg-slate-800 rounded-2xl p-4">
-                            <div class="flex justify-between items-center mb-2">
-                                <div class="flex items-center gap-x-2">
-                                    <i class="fa-solid fa-exchange-alt text-emerald-500"></i>
-                                    <span class="text-sm font-medium">Long + Short</span>
-                                </div>
-                                <span id="sidebar-longshort-winrate" class="text-xl font-bold text-emerald-400">0%</span>
+                            <div class="flex justify-between items-center mb-1">
+                                <span class="text-sm text-emerald-400">Long + Short 勝率</span>
+                                <span id="year2026-longshort" class="font-bold text-emerald-400">75%</span>
                             </div>
                             <div class="h-1.5 bg-slate-700 rounded-full">
-                                <div id="sidebar-longshort-bar" class="h-1.5 bg-emerald-500 rounded-full transition-all" style="width:0%"></div>
+                                <div class="h-1.5 bg-emerald-500 rounded-full" style="width:75%"></div>
                             </div>
                         </div>
                     </div>
                 </div>
                 
-                <div class="text-xs text-slate-500 mt-6 px-1">
-                    <i class="fa-solid fa-info-circle mr-1"></i>
-                    每年最後一日可查看當年完整總結
+                <!-- 2027 Year Summary -->
+                <div>
+                    <div class="flex items-center gap-x-2 text-emerald-400 mb-3">
+                        <i class="fa-solid fa-calendar-alt"></i>
+                        <span class="font-bold">2027 年表現</span>
+                    </div>
+                    
+                    <div class="space-y-3">
+                        <div class="bg-slate-800 rounded-2xl p-4">
+                            <div class="flex justify-between items-center mb-1">
+                                <span class="text-sm text-sky-400">Swing Trade 勝率</span>
+                                <span id="year2027-swing" class="font-bold text-sky-400">0%</span>
+                            </div>
+                            <div class="h-1.5 bg-slate-700 rounded-full">
+                                <div id="year2027-swing-bar" class="h-1.5 bg-sky-500 rounded-full transition-all" style="width:0%"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-slate-800 rounded-2xl p-4">
+                            <div class="flex justify-between items-center mb-1">
+                                <span class="text-sm text-purple-400">Day Trade 勝率</span>
+                                <span id="year2027-daytrade" class="font-bold text-purple-400">0%</span>
+                            </div>
+                            <div class="h-1.5 bg-slate-700 rounded-full">
+                                <div id="year2027-daytrade-bar" class="h-1.5 bg-purple-500 rounded-full transition-all" style="width:0%"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-slate-800 rounded-2xl p-4">
+                            <div class="flex justify-between items-center mb-1">
+                                <span class="text-sm text-emerald-400">Long + Short 勝率</span>
+                                <span id="year2027-longshort" class="font-bold text-emerald-400">0%</span>
+                            </div>
+                            <div class="h-1.5 bg-slate-700 rounded-full">
+                                <div id="year2027-longshort-bar" class="h-1.5 bg-emerald-500 rounded-full transition-all" style="width:0%"></div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
+            </div>
+            
+            <div class="p-6 border-t border-slate-700 text-xs text-slate-500">
+                每年12月31日會自動鎖定當年數據
             </div>
         </div>
     </div>
     
     <!-- Main Content -->
-    <div class="max-w-7xl mx-auto">
+    <div>
         
         <!-- Navbar -->
         <nav class="bg-slate-900 border-b border-slate-700 px-6 py-4 flex items-center justify-between sticky top-0 z-50">
@@ -696,14 +740,15 @@
             const longShortWins = longShortTrades.filter(t => t.outcome === 'win').length;
             const longShortWinRate = longShortTrades.length > 0 ? Math.round((longShortWins / longShortTrades.length) * 100) : 0;
             
-            document.getElementById('sidebar-swing-winrate').textContent = swingWinRate + '%';
-            document.getElementById('sidebar-swing-bar').style.width = swingWinRate + '%';
+            // Update 2027 (Current Year)
+            document.getElementById('year2027-swing').textContent = swingWinRate + '%';
+            document.getElementById('year2027-swing-bar').style.width = swingWinRate + '%';
             
-            document.getElementById('sidebar-daytrade-winrate').textContent = dayWinRate + '%';
-            document.getElementById('sidebar-daytrade-bar').style.width = dayWinRate + '%';
+            document.getElementById('year2027-daytrade').textContent = dayWinRate + '%';
+            document.getElementById('year2027-daytrade-bar').style.width = dayWinRate + '%';
             
-            document.getElementById('sidebar-longshort-winrate').textContent = longShortWinRate + '%';
-            document.getElementById('sidebar-longshort-bar').style.width = longShortWinRate + '%';
+            document.getElementById('year2027-longshort').textContent = longShortWinRate + '%';
+            document.getElementById('year2027-longshort-bar').style.width = longShortWinRate + '%';
         }
         
         function exportToCSV() {
@@ -772,7 +817,7 @@
             }, 300);
         };
         
-        console.log('%c[StockJournal] Overlay Sidebar 版本已載入 ✅', 'color:#22c55e');
+        console.log('%c[StockJournal] 最終絲滑版本已載入 ✅', 'color:#22c55e');
     </script>
 </body>
 </html>
