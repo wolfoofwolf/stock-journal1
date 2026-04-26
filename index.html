@@ -259,13 +259,26 @@
                 <div class="finance-card bg-slate-900 border border-slate-700 rounded-3xl p-6">
                     <div class="flex justify-between items-start">
                         <div>
-                            <p class="text-sm text-orange-400">Long + Shorts 勝率</p>
+                            <p class="text-sm text-emerald-400">Long 勝率</p>
                             <div class="flex items-baseline mt-1">
-                                <div id="longshort-win-rate" class="text-4xl font-bold">0</div>
+                                <div id="long-win-rate" class="text-4xl font-bold">0</div>
                                 <span class="text-xl text-slate-400 ml-1">%</span>
                             </div>
                         </div>
-                        <i class="fa-solid fa-arrows-alt-h text-3xl text-orange-500"></i>
+                        <i class="fa-solid fa-arrow-trend-up text-3xl text-emerald-500"></i>
+                    </div>
+                </div>
+                
+                <div class="finance-card bg-slate-900 border border-slate-700 rounded-3xl p-6">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-sm text-orange-400">Short 勝率</p>
+                            <div class="flex items-baseline mt-1">
+                                <div id="short-win-rate" class="text-4xl font-bold">0</div>
+                                <span class="text-xl text-slate-400 ml-1">%</span>
+                            </div>
+                        </div>
+                        <i class="fa-solid fa-arrow-trend-down text-3xl text-orange-500"></i>
                     </div>
                 </div>
             </div>
@@ -494,7 +507,7 @@
                 const outcomeBadge = trade.outcome === 'win' ? `<span class="win-badge">成功</span>` : `<span class="loss-badge">失敗</span>`;
                 
                 let typeBadge = '';
-                if (trade.tradeType === 'short') typeBadge = `<span class="px-2 py-0.5 text-xs bg-orange-900 text-orange-400 rounded">Short</span>`;
+                if (trade.tradeType === 'short') typeBadge = `<span class="px-2 py-0.5 text-xs bg-orange-900 text-emerald-400 rounded">Short</span>`;
                 else if (trade.tradeType === 'long') typeBadge = `<span class="px-2 py-0.5 text-xs bg-emerald-900 text-emerald-400 rounded">Long</span>`;
                 else if (trade.tradeType === 'daytrade') typeBadge = `<span class="px-2 py-0.5 text-xs bg-purple-900 text-purple-400 rounded">Day</span>`;
                 else typeBadge = `<span class="px-2 py-0.5 text-xs bg-sky-900 text-sky-400 rounded">Swing</span>`;
@@ -799,7 +812,7 @@
                 const outcomeHTML = trade.outcome === 'win' ? `<span class="win-badge">成功</span>` : `<span class="loss-badge">失敗</span>`;
                 
                 let typeHTML = '';
-                if (trade.tradeType === 'short') typeHTML = `<span class="px-2 py-0.5 text-xs bg-orange-900 text-orange-400 rounded">Short</span>`;
+                if (trade.tradeType === 'short') typeHTML = `<span class="px-2 py-0.5 text-xs bg-orange-900 text-emerald-400 rounded">Short</span>`;
                 else if (trade.tradeType === 'long') typeHTML = `<span class="px-2 py-0.5 text-xs bg-emerald-900 text-emerald-400 rounded">Long</span>`;
                 else if (trade.tradeType === 'daytrade') typeHTML = `<span class="px-2 py-0.5 text-xs bg-purple-900 text-purple-400 rounded">Day</span>`;
                 else typeHTML = `<span class="px-2 py-0.5 text-xs bg-sky-900 text-sky-400 rounded">Swing</span>`;
@@ -872,12 +885,19 @@
             document.getElementById('performance-score').textContent = score;
             document.getElementById('score-bar').style.width = score + '%';
             
-            // Long + Shorts win rate
-            const longShortTrades = trades.filter(t => t.tradeType === 'long' || t.tradeType === 'short');
-            const longShortWins = longShortTrades.filter(t => t.outcome === 'win').length;
-            const longShortWinRate = longShortTrades.length > 0 ? Math.round((longShortWins / longShortTrades.length) * 100) : 0;
-            const longShortEl = document.getElementById('longshort-win-rate');
-            if (longShortEl) longShortEl.textContent = longShortWinRate;
+            // Long 勝率
+            const longTrades = trades.filter(t => t.tradeType === 'long');
+            const longWins = longTrades.filter(t => t.outcome === 'win').length;
+            const longWinRate = longTrades.length > 0 ? Math.round((longWins / longTrades.length) * 100) : 0;
+            const longEl = document.getElementById('long-win-rate');
+            if (longEl) longEl.textContent = longWinRate;
+            
+            // Short 勝率
+            const shortTrades = trades.filter(t => t.tradeType === 'short');
+            const shortWins = shortTrades.filter(t => t.outcome === 'win').length;
+            const shortWinRate = shortTrades.length > 0 ? Math.round((shortWins / shortTrades.length) * 100) : 0;
+            const shortEl = document.getElementById('short-win-rate');
+            if (shortEl) shortEl.textContent = shortWinRate;
         }
         
         function exportToCSV() {
