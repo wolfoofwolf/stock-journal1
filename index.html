@@ -580,7 +580,22 @@
         
         function logout() {
             auth.signOut().then(() => {
-                location.reload();
+                // Directly show login screen (more reliable than reload)
+                document.getElementById('login-screen').style.display = 'flex';
+                document.getElementById('main-app').classList.add('hidden');
+                document.getElementById('main-app').classList.remove('block');
+                
+                // Clear data
+                trades = [];
+                favorites = [];
+                currentUser = null;
+                
+                // Clear table
+                const tbody = document.getElementById('trade-table-body');
+                if (tbody) tbody.innerHTML = '';
+                
+                const countEl = document.getElementById('history-count');
+                if (countEl) countEl.textContent = '0 筆';
             });
         }
         
