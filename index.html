@@ -432,7 +432,7 @@
                                         <th class="text-right py-3 px-4">盈虧</th>
                                         <th class="text-center py-3 px-4">類型</th>
                                         <th class="text-center py-3 px-4">R:R</th>
-                                        <th class="text-center py-3 px-4">結果</th>
+                                        <th class="text-center py-3 px-4 min-w-[70px]">結果</th>
                                         <th class="text-left py-3 px-4">原因</th>
                                         <th class="w-10"></th>
                                         <th class="w-10"></th>
@@ -836,11 +836,11 @@
                     <td class="px-4 py-3 font-mono text-blue-400">${trade.symbol}</td>
                     <td class="px-4 py-3 text-right font-semibold">${amountStr}</td>
                     <td class="px-4 py-3 text-right font-semibold ${pnlColor}">${pnlStr}</td>
-                    <td class="px-4 py-3 text-center">${typeHTML}</td>
+                    <td class="px-4 py-3 text-center min-w-[70px]">${typeHTML}</td>
                     <td class="px-4 py-3 text-center text-xs text-purple-400">${trade.riskReward}</td>
-                    <td class="px-4 py-3 text-center">${outcomeHTML}</td>
+                    <td class="px-4 py-3 text-center min-w-[70px]">${outcomeHTML}</td>
                     <td class="px-4 py-3 text-xs text-slate-300 max-w-[180px] truncate cursor-pointer hover:text-white reason-cell" data-reason="${trade.reason.replace(/"/g, '&quot;')}">${trade.reason}</td>
-                    <td class="px-4 py-3 text-center">${imageHTML}</td>
+                    <td class="px-4 py-3 text-center min-w-[70px]">${imageHTML}</td>
                     <td class="px-2 py-3">${starHTML}</td>
                     <td class="px-2 py-3">${deleteHTML}</td>
                 `;
