@@ -820,11 +820,11 @@
                 
                 // If more than 6 digits, make it a toggle button
                 if (trade.amount && trade.amount.toString().length > 6) {
-                    amountDisplay = `<button onclick="toggleAmount(this, '${trade.amount.toLocaleString()}')" class="text-blue-400 hover:text-blue-300 font-mono">顯示金額</button>`;
+                    amountDisplay = `<button onclick="toggleAmount(this, '${trade.amount.toLocaleString()}')" class="text-blue-400 hover:text-blue-300 font-mono">Show</button>`;
                 }
                 if (trade.pnl && Math.abs(trade.pnl).toString().length > 6) {
                     const pnlValue = trade.pnl > 0 ? `+${trade.pnl.toLocaleString()}` : trade.pnl.toLocaleString();
-                    pnlDisplay = `<button onclick="toggleAmount(this, '${pnlValue}')" class="${pnlColor} hover:opacity-80 font-mono">顯示金額</button>`;
+                    pnlDisplay = `<button onclick="toggleAmount(this, '${pnlValue}')" class="${pnlColor} hover:opacity-80 font-mono">Show</button>`;
                 }
                 const outcomeHTML = trade.outcome === 'win' 
                     ? `<span class="inline-flex items-center justify-center w-7 h-7 bg-emerald-500 rounded-full"><i class="fa-solid fa-check text-white text-sm"></i></span>` 
@@ -839,7 +839,7 @@
                 let imageHTML = trade.image 
                     ? `<button onclick="showImageModal('${trade.image}'); event.stopImmediatePropagation();" class="px-3 py-1 text-xs bg-slate-700 hover:bg-slate-600 rounded-full flex items-center gap-x-1.5 text-slate-300">
                         <i class="fa-solid fa-image text-[10px]"></i>
-                        <span>查看</span>
+                        <span>View</span>
                       </button>` 
                     : `<span class="text-slate-500 text-xs">無</span>`;
                 
@@ -859,7 +859,7 @@
                         <button onclick="showReasonModal('${trade.reason.replace(/'/g, "\\'")}'); event.stopImmediatePropagation();" 
                                 class="px-3 py-1 text-xs bg-slate-700 hover:bg-slate-600 rounded-full flex items-center gap-x-1.5 text-slate-300">
                             <i class="fa-solid fa-file-alt text-[10px]"></i>
-                            <span>查看</span>
+                            <span>View</span>
                         </button>
                     </td>
                     <td class="px-4 py-3 text-center ">${imageHTML}</td>
@@ -1007,11 +1007,11 @@
         }
         
         function toggleAmount(btn, fullValue) {
-            if (btn.textContent === '顯示金額') {
+            if (btn.textContent === 'Show') {
                 btn.textContent = fullValue;
                 btn.style.fontSize = '0.875rem';
             } else {
-                btn.textContent = '顯示金額';
+                btn.textContent = 'Show';
                 btn.style.fontSize = '';
             }
         }
