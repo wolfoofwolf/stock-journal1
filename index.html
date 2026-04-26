@@ -699,7 +699,7 @@
             const symbol = document.getElementById('stock-symbol').value.trim().toUpperCase();
             const date = document.getElementById('trade-date').value;
             const amount = parseFloat(document.getElementById('position-amount').value);
-            const pnl = parseFloat(document.getElementById('pnl-amount').value) || 0;
+            let pnl = parseFloat(document.getElementById('pnl-amount').value) || 0;
             const riskReward = document.getElementById('risk-reward').value.trim();
             const outcome = document.querySelector('#outcome-win').classList.contains('!border-emerald-500') ? 'win' : 'loss';
             const reason = document.getElementById('trade-reason').value.trim();
@@ -707,6 +707,13 @@
             if (!symbol || !date || !amount) {
                 alert('請填寫完整資料');
                 return;
+            }
+            
+            // Auto adjust P&L sign based on outcome
+            if (outcome === 'win' && pnl < 0) {
+                pnl = Math.abs(pnl);  // Make positive for win
+            } else if (outcome === 'loss' && pnl > 0) {
+                pnl = -Math.abs(pnl); // Make negative for loss
             }
             
             const tradeData = {
