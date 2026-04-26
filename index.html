@@ -758,13 +758,21 @@
         }
         
         function selectStrategy(strategy) {
-            document.getElementById('strategy-META').classList.remove('active', 'border-purple-500');
-            document.getElementById('strategy-PBB').classList.remove('active', 'border-purple-500');
-            document.getElementById('strategy-PP').classList.remove('active', 'border-purple-500');
-            document.getElementById('strategy-BO').classList.remove('active', 'border-purple-500');
-            
-            document.getElementById('strategy-' + strategy).classList.add('active', 'border-purple-500');
-            currentStrategy = strategy;
+            try {
+                const strategies = ['META', 'PBB', 'PP', 'BO'];
+                strategies.forEach(s => {
+                    const btn = document.getElementById('strategy-' + s);
+                    if (btn) btn.classList.remove('active', 'border-purple-500');
+                });
+                
+                const selectedBtn = document.getElementById('strategy-' + strategy);
+                if (selectedBtn) {
+                    selectedBtn.classList.add('active', 'border-purple-500');
+                }
+                currentStrategy = strategy;
+            } catch (e) {
+                console.error('Strategy selection error:', e);
+            }
         }
         
         function filterTrades(type) {
