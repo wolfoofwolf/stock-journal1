@@ -22,6 +22,7 @@
         .type-btn { transition: all 0.1s ease; }
         .type-btn.active { background-color: #3b82f6; color: white; border-color: #3b82f6; }
         
+        /* Smooth Sidebar Animation - 1.5s */
         #sidebar {
             transition: transform 1.5s cubic-bezier(0.32, 0.72, 0, 1);
         }
@@ -51,6 +52,7 @@
     <div id="sidebar" onclick="toggleSidebar()" class="fixed inset-0 bg-black/60 z-[200] hidden">
         <div onclick="event.stopImmediatePropagation()" class="w-80 h-full bg-slate-900 border-r border-slate-700 flex flex-col sidebar-overlay">
             
+            <!-- Sidebar Header -->
             <div class="p-6 border-b border-slate-700 flex justify-between items-center">
                 <div class="flex items-center gap-x-3">
                     <div class="w-10 h-10 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-2xl flex items-center justify-center">
@@ -66,14 +68,17 @@
                 </button>
             </div>
             
+            <!-- Sidebar Menu -->
             <div class="p-4 flex-1 overflow-auto">
                 <div class="space-y-2">
+                    <!-- 年度表現總結 Button -->
                     <button onclick="showYearSummary()" 
                             class="w-full flex items-center gap-x-3 px-4 py-3 text-left hover:bg-slate-800 rounded-2xl transition-all">
                         <i class="fa-solid fa-calendar-check text-emerald-500 w-5"></i>
                         <span class="font-medium">年度表現總結</span>
                     </button>
                     
+                    <!-- 收藏的交易 Button -->
                     <button onclick="showFavorites()" 
                             class="w-full flex items-center gap-x-3 px-4 py-3 text-left hover:bg-slate-800 rounded-2xl transition-all">
                         <i class="fa-solid fa-star text-yellow-500 w-5"></i>
@@ -91,8 +96,10 @@
     <!-- Main Content -->
     <div>
         
+        <!-- Navbar (Full Width) -->
         <nav class="bg-slate-900 border-b border-slate-700 px-6 py-4 flex items-center justify-between sticky top-0 z-50 w-full">
             <div class="flex items-center gap-x-4">
+                <!-- Hamburger Button -->
                 <button onclick="toggleSidebar()" 
                         class="w-10 h-10 flex items-center justify-center text-slate-400 hover:text-white hover:bg-slate-800 rounded-xl transition-all">
                     <i class="fa-solid fa-bars text-xl"></i>
@@ -283,6 +290,7 @@
                                 </div>
                             </div>
                             
+                            <!-- Trade Type Buttons -->
                             <div>
                                 <label class="text-sm text-slate-400 block mb-2">交易類型</label>
                                 <div class="grid grid-cols-4 gap-2">
@@ -330,8 +338,9 @@
                                 <textarea id="trade-reason" rows="3" placeholder="例如：突破月線..." class="w-full px-4 py-3 bg-slate-800 border border-slate-600 rounded-2xl"></textarea>
                             </div>
                             
+                            <!-- Image Upload -->
                             <div>
-                                <label class="text-sm text-slate-400 block mb-1">上傳圖片</label>
+                                <label class="text-sm text-slate-400 block mb-1">上傳圖片（K線圖 / 分析截圖）</label>
                                 <label class="block border-2 border-dashed border-slate-600 rounded-2xl p-4 text-center hover:border-blue-500 transition-colors cursor-pointer">
                                     <input type="file" id="image-upload" accept="image/*" class="hidden" onchange="previewImage(this)">
                                     <div id="upload-placeholder">
@@ -360,6 +369,7 @@
                         <div class="flex justify-between items-center mb-4">
                             <h3 class="text-xl font-bold">交易歷史</h3>
                             
+                            <!-- Filter Buttons -->
                             <div class="flex gap-1 text-xs">
                                 <button onclick="filterTrades('all')" id="filter-all"
                                         class="filter-btn active px-3 py-1 rounded-full bg-blue-600 text-white">全部</button>
@@ -390,7 +400,6 @@
                                         <th class="text-left py-3 px-4">原因</th>
                                         <th class="w-10"></th>
                                         <th class="w-10"></th>
-                                        <th class="w-10"></th>
                                     </tr>
                                 </thead>
                                 <tbody id="trade-table-body" class="divide-y divide-slate-700"></tbody>
@@ -414,6 +423,7 @@
     </div>
     
     <script>
+        // ==================== FIREBASE CONFIG ====================
         const firebaseConfig = {
           apiKey: "AIzaSyDDnshwF7GCGPLuphgUMcIdNSGLwraeVXs",
           authDomain: "stock-6a498.firebaseapp.com",
@@ -435,6 +445,7 @@
         let currentTradeType = 'long';
         let currentFilter = 'all';
         
+        // ==================== SIDEBAR TOGGLE ====================
         function toggleSidebar() {
             const sidebar = document.getElementById('sidebar');
             if (sidebar.classList.contains('hidden')) {
@@ -446,23 +457,13 @@
             }
         }
         
+        // ==================== SHOW YEAR SUMMARY ====================
         function showYearSummary() {
             toggleSidebar();
-            
-            const currentYear = new Date().getFullYear();
-            const isLastDay = (new Date().getMonth() === 11 && new Date().getDate() === 31);
-            
-            let message = `年度表現總結\n\n${currentYear}年表現即時更新中...\n`;
-            
-            if (isLastDay) {
-                message += `\n✅ 今天是12月31日！\n系統已自動鎖定${currentYear}年數據\n並為${currentYear + 1}年開啟新欄位`;
-            } else {
-                message += `\n下次12月31日會自動鎖定當年數據`;
-            }
-            
-            alert(message);
+            alert('年度表現總結功能已開啟！\n\n2026年表現即時更新中...\n每年12月31日會自動鎖定當年數據');
         }
         
+        // ==================== SHOW FAVORITES ====================
         function showFavorites() {
             toggleSidebar();
             if (favorites.length === 0) {
@@ -471,66 +472,22 @@
             }
             
             let html = '<div class="fixed inset-0 bg-black/80 z-[300] flex items-center justify-center p-4" onclick="this.remove()">';
-            html += '<div onclick="event.stopImmediatePropagation()" class="bg-slate-900 rounded-3xl w-full max-w-5xl max-h-[85vh] overflow-auto p-6">';
+            html += '<div onclick="event.stopImmediatePropagation()" class="bg-slate-900 rounded-3xl w-full max-w-4xl max-h-[80vh] overflow-auto p-6">';
             html += '<div class="flex justify-between items-center mb-6"><h2 class="text-2xl font-bold">收藏的交易</h2><button onclick="this.closest(\'.fixed\').remove()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-times text-xl"></i></button></div>';
-            html += '<div class="space-y-4">';
+            html += '<div class="space-y-3">';
             
             favorites.forEach(trade => {
                 const dateStr = trade.date ? new Date(trade.date).toLocaleDateString('zh-TW') : '';
-                const pnlColor = trade.pnl > 0 ? 'text-emerald-400' : (trade.pnl < 0 ? 'text-red-400' : 'text-slate-400');
-                const outcomeBadge = trade.outcome === 'win' 
-                    ? `<span class="win-badge">成功</span>` 
-                    : `<span class="loss-badge">失敗</span>`;
-                
-                let typeBadge = '';
-                if (trade.tradeType === 'short') typeBadge = `<span class="px-2 py-0.5 text-xs bg-orange-900 text-orange-400 rounded">Short</span>`;
-                else if (trade.tradeType === 'long') typeBadge = `<span class="px-2 py-0.5 text-xs bg-emerald-900 text-emerald-400 rounded">Long</span>`;
-                else if (trade.tradeType === 'daytrade') typeBadge = `<span class="px-2 py-0.5 text-xs bg-purple-900 text-purple-400 rounded">Day</span>`;
-                else typeBadge = `<span class="px-2 py-0.5 text-xs bg-sky-900 text-sky-400 rounded">Swing</span>`;
-                
-                let imageHTML = '';
-                if (trade.image) {
-                    imageHTML = `<img src="${trade.image}" onclick="showImageModal('${trade.image}'); event.target.closest('.fixed').remove();" class="w-16 h-16 object-cover rounded-xl border border-slate-600 cursor-pointer" alt="圖片">`;
-                }
-                
-                html += `
-                <div class="bg-slate-800 rounded-2xl p-5">
-                    <div class="flex justify-between items-start">
-                        <div class="flex-1">
-                            <div class="flex items-center gap-x-3 mb-2">
-                                <span class="font-mono text-xl text-blue-400">${trade.symbol}</span>
-                                ${outcomeBadge}
-                                ${typeBadge}
-                            </div>
-                            
-                            <div class="grid grid-cols-2 gap-x-6 text-sm">
-                                <div>
-                                    <div class="text-slate-400">交易日期</div>
-                                    <div class="font-semibold">${dateStr}</div>
-                                </div>
-                                <div>
-                                    <div class="text-slate-400">持倉金額</div>
-                                    <div class="font-semibold">${trade.amount ? trade.amount.toLocaleString() : '0'} 元</div>
-                                </div>
-                                <div>
-                                    <div class="text-slate-400">盈虧金額</div>
-                                    <div class="font-bold text-lg ${pnlColor}">${trade.pnl > 0 ? '+' : ''}${trade.pnl || 0} 元</div>
-                                </div>
-                                <div>
-                                    <div class="text-slate-400">風險回報比</div>
-                                    <div class="font-semibold">${trade.riskReward || 'N/A'}</div>
-                                </div>
-                            </div>
-                            
-                            <div class="mt-3">
-                                <div class="text-slate-400 text-sm">原因</div>
-                                <div class="text-sm">${trade.reason || '未填寫'}</div>
-                            </div>
+                html += `<div class="bg-slate-800 rounded-2xl p-4 flex justify-between items-center">
+                    <div>
+                        <div class="flex items-center gap-x-2">
+                            <span class="font-mono text-blue-400">${trade.symbol}</span>
+                            <span class="text-xs px-2 py-0.5 rounded ${trade.outcome === 'win' ? 'bg-emerald-900 text-emerald-400' : 'bg-red-900 text-red-400'}">${trade.outcome === 'win' ? '成功' : '失敗'}</span>
                         </div>
-                        
-                        <div class="ml-4">
-                            ${imageHTML}
-                        </div>
+                        <div class="text-xs text-slate-400 mt-1">${dateStr} • ${trade.amount}元</div>
+                    </div>
+                    <div class="text-right">
+                        <div class="font-bold ${trade.pnl > 0 ? 'text-emerald-400' : 'text-red-400'}">${trade.pnl > 0 ? '+' : ''}${trade.pnl || 0}</div>
                     </div>
                 </div>`;
             });
@@ -539,6 +496,7 @@
             document.body.insertAdjacentHTML('beforeend', html);
         }
         
+        // ==================== TOGGLE FAVORITE ====================
         async function toggleFavorite(tradeId, event) {
             event.stopImmediatePropagation();
             
@@ -560,6 +518,7 @@
             renderTrades();
         }
         
+        // ==================== AUTH ====================
         function loginWithEmail() {
             const email = document.getElementById('login-email').value;
             const password = document.getElementById('login-password').value;
@@ -580,25 +539,11 @@
         
         function logout() {
             auth.signOut().then(() => {
-                // Directly show login screen (more reliable than reload)
-                document.getElementById('login-screen').style.display = 'flex';
-                document.getElementById('main-app').classList.add('hidden');
-                document.getElementById('main-app').classList.remove('block');
-                
-                // Clear data
-                trades = [];
-                favorites = [];
-                currentUser = null;
-                
-                // Clear table
-                const tbody = document.getElementById('trade-table-body');
-                if (tbody) tbody.innerHTML = '';
-                
-                const countEl = document.getElementById('history-count');
-                if (countEl) countEl.textContent = '0 筆';
+                location.reload();
             });
         }
         
+        // ==================== FIRESTORE ====================
         async function loadTradesFromFirestore() {
             if (!currentUser) return;
             
@@ -625,10 +570,7 @@
         
         async function addTradeToFirestore(tradeData) {
             if (!currentUser) {
-                alert('⚠️ 偵測到你已登出，請重新登入！');
-                // Force show login screen
-                document.getElementById('login-screen').style.display = 'flex';
-                document.getElementById('main-app').classList.add('hidden');
+                alert('請先登入！');
                 return;
             }
             
@@ -637,13 +579,7 @@
                 await loadTradesFromFirestore();
                 showToast('✅ 已成功儲存到雲端！');
             } catch (error) {
-                console.error('Firestore Error:', error);
-                
-                if (error.code === 'permission-denied') {
-                    alert('❌ 儲存失敗：權限不足\n請確認 Firestore 安全規則是否正確設定');
-                } else {
-                    alert('❌ 儲存失敗：' + error.message);
-                }
+                alert('儲存失敗：' + error.message);
             }
         }
         
@@ -653,6 +589,7 @@
             await loadTradesFromFirestore();
         }
         
+        // ==================== IMAGE HANDLING ====================
         function previewImage(input) {
             const file = input.files[0];
             if (!file) return;
@@ -682,6 +619,7 @@
             document.getElementById('image-upload').value = '';
         }
         
+        // ==================== TRADE TYPE ====================
         function selectTradeType(type) {
             document.getElementById('type-short').classList.remove('active', 'border-blue-500');
             document.getElementById('type-long').classList.remove('active', 'border-blue-500');
@@ -692,6 +630,7 @@
             currentTradeType = type;
         }
         
+        // ==================== FILTER TRADES ====================
         function filterTrades(type) {
             currentFilter = type;
             
@@ -701,6 +640,7 @@
             renderTrades();
         }
         
+        // ==================== UI FUNCTIONS ====================
         function selectOutcome(type) {
             const winLabel = document.getElementById('outcome-win');
             const lossLabel = document.getElementById('outcome-loss');
@@ -746,6 +686,7 @@
             
             await addTradeToFirestore(tradeData);
             
+            // Clear form
             document.getElementById('stock-symbol').value = '';
             document.getElementById('position-amount').value = '';
             document.getElementById('pnl-amount').value = '';
@@ -799,7 +740,6 @@
                 
                 const isFavorite = favorites.some(f => f.id === trade.id);
                 const starHTML = `<button onclick="toggleFavorite('${trade.id}', event)" class="star-btn p-1 ${isFavorite ? 'active text-yellow-400' : 'text-slate-500 hover:text-yellow-400'}"><i class="fa-solid fa-star"></i></button>`;
-                const deleteHTML = `<button onclick="deleteTrade('${trade.id}')" class="text-red-400 hover:text-red-600 p-1"><i class="fa-solid fa-trash text-sm"></i></button>`;
                 
                 row.innerHTML = `
                     <td class="px-4 py-3 text-xs text-slate-400">${dateStr}</td>
@@ -812,7 +752,6 @@
                     <td class="px-4 py-3 text-xs text-slate-300 max-w-[180px] truncate">${trade.reason}</td>
                     <td class="px-4 py-3 text-center">${imageHTML}</td>
                     <td class="px-2 py-3">${starHTML}</td>
-                    <td class="px-2 py-3">${deleteHTML}</td>
                 `;
                 tbody.appendChild(row);
             });
@@ -877,37 +816,23 @@
             const longShortWins = longShortTrades.filter(t => t.outcome === 'win').length;
             const longShortWinRate = longShortTrades.length > 0 ? Math.round((longShortWins / longShortTrades.length) * 100) : 0;
             
-            // Add null checks to prevent error when sidebar is closed
-            const swingEl = document.getElementById('year2026-swing');
-            const swingBar = document.getElementById('year2026-swing-bar');
-            const dayEl = document.getElementById('year2026-daytrade');
-            const dayBar = document.getElementById('year2026-daytrade-bar');
-            const longEl = document.getElementById('year2026-longshort');
-            const longBar = document.getElementById('year2026-longshort-bar');
+            document.getElementById('year2026-swing').textContent = swingWinRate + '%';
+            document.getElementById('year2026-swing-bar').style.width = swingWinRate + '%';
             
-            if (swingEl) swingEl.textContent = swingWinRate + '%';
-            if (swingBar) swingBar.style.width = swingWinRate + '%';
+            document.getElementById('year2026-daytrade').textContent = dayWinRate + '%';
+            document.getElementById('year2026-daytrade-bar').style.width = dayWinRate + '%';
             
-            if (dayEl) dayEl.textContent = dayWinRate + '%';
-            if (dayBar) dayBar.style.width = dayWinRate + '%';
+            document.getElementById('year2026-longshort').textContent = longShortWinRate + '%';
+            document.getElementById('year2026-longshort-bar').style.width = longShortWinRate + '%';
             
-            if (longEl) longEl.textContent = longShortWinRate + '%';
-            if (longBar) longBar.style.width = longShortWinRate + '%';
+            document.getElementById('year2027-swing').textContent = '0%';
+            document.getElementById('year2027-swing-bar').style.width = '0%';
             
-            // Next year placeholders (also with null check)
-            const nextSwing = document.getElementById('year2027-swing');
-            const nextSwingBar = document.getElementById('year2027-swing-bar');
-            const nextDay = document.getElementById('year2027-daytrade');
-            const nextDayBar = document.getElementById('year2027-daytrade-bar');
-            const nextLong = document.getElementById('year2027-longshort');
-            const nextLongBar = document.getElementById('year2027-longshort-bar');
+            document.getElementById('year2027-daytrade').textContent = '0%';
+            document.getElementById('year2027-daytrade-bar').style.width = '0%';
             
-            if (nextSwing) nextSwing.textContent = '0%';
-            if (nextSwingBar) nextSwingBar.style.width = '0%';
-            if (nextDay) nextDay.textContent = '0%';
-            if (nextDayBar) nextDayBar.style.width = '0%';
-            if (nextLong) nextLong.textContent = '0%';
-            if (nextLongBar) nextLongBar.style.width = '0%';
+            document.getElementById('year2027-longshort').textContent = '0%';
+            document.getElementById('year2027-longshort-bar').style.width = '0%';
         }
         
         function exportToCSV() {
@@ -950,6 +875,7 @@
             setTimeout(() => toast.remove(), 2500);
         }
         
+        // Auto login check
         auth.onAuthStateChanged(user => {
             if (user) {
                 currentUser = user;
@@ -958,14 +884,10 @@
                 document.getElementById('main-app').classList.add('block');
                 loadTradesFromFirestore();
                 loadFavoritesFromFirestore();
-            } else {
-                // User is logged out - show login screen
-                document.getElementById('login-screen').style.display = 'flex';
-                document.getElementById('main-app').classList.add('hidden');
-                document.getElementById('main-app').classList.remove('block');
             }
         });
         
+        // Set default date + default trade type
         window.onload = function() {
             const dateInput = document.getElementById('trade-date');
             if (dateInput) dateInput.value = new Date().toISOString().split('T')[0];
@@ -982,7 +904,7 @@
             }, 300);
         };
         
-        console.log('%c[StockJournal] 最終修復版本已載入 ✅', 'color:#22c55e');
+        console.log('%c[StockJournal] 最終完整版本已載入 ✅', 'color:#22c55e');
     </script>
 </body>
 </html>
