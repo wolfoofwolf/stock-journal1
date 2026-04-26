@@ -966,14 +966,16 @@
             const btn = document.getElementById('stats-toggle-btn');
             
             if (!statsHidden) {
-                // Hide with animation
+                // Hide - force reflow for first animation
+                row.style.maxHeight = row.scrollHeight + 'px';
+                void row.offsetHeight; // Force reflow
                 row.style.transition = 'all 0.4s ease';
                 row.style.maxHeight = '0px';
                 row.style.opacity = '0';
                 btn.innerHTML = `<i class="fa-solid fa-eye"></i><span class="ml-2">顯示統計</span>`;
                 statsHidden = true;
             } else {
-                // Show with animation
+                // Show
                 row.style.transition = 'all 0.4s ease';
                 row.style.maxHeight = '400px';
                 row.style.opacity = '1';
