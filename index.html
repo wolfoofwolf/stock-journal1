@@ -255,6 +255,19 @@
                         <i class="fa-solid fa-sync text-3xl text-sky-500"></i>
                     </div>
                 </div>
+                
+                <div class="finance-card bg-slate-900 border border-slate-700 rounded-3xl p-6">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-sm text-orange-400">Long + Shorts 勝率</p>
+                            <div class="flex items-baseline mt-1">
+                                <div id="longshort-win-rate" class="text-4xl font-bold">0</div>
+                                <span class="text-xl text-slate-400 ml-1">%</span>
+                            </div>
+                        </div>
+                        <i class="fa-solid fa-arrows-alt-h text-3xl text-orange-500"></i>
+                    </div>
+                </div>
             </div>
             
             <div class="grid grid-cols-1 lg:grid-cols-5 gap-6">
@@ -858,6 +871,13 @@
             score = Math.max(0, Math.min(100, score));
             document.getElementById('performance-score').textContent = score;
             document.getElementById('score-bar').style.width = score + '%';
+            
+            // Long + Shorts win rate
+            const longShortTrades = trades.filter(t => t.tradeType === 'long' || t.tradeType === 'short');
+            const longShortWins = longShortTrades.filter(t => t.outcome === 'win').length;
+            const longShortWinRate = longShortTrades.length > 0 ? Math.round((longShortWins / longShortTrades.length) * 100) : 0;
+            const longShortEl = document.getElementById('longshort-win-rate');
+            if (longShortEl) longShortEl.textContent = longShortWinRate;
         }
         
         function exportToCSV() {
