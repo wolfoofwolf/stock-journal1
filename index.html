@@ -564,7 +564,7 @@
                 
                 let imageHTML = '';
                 if (trade.image) {
-                    imageHTML = `<img src="${trade.image}" onclick="showImageModal('${trade.image}'); event.target.closest('.fixed').remove();" class="w-16 h-16 object-cover rounded-xl border border-slate-600 cursor-pointer" alt="圖片">`;
+                    imageHTML = `<img src="${trade.image}" onclick="showImageOnRight('${trade.image}'); event.target.closest('.fixed').remove();" class="w-16 h-16 object-cover rounded-xl border border-slate-600 cursor-pointer" alt="圖片">`;
                 }
                 
                 html += `
@@ -921,7 +921,7 @@
                 else strategyHTML = `<span class="px-2 py-0.5 text-xs bg-slate-700 text-slate-400 rounded">N/A</span>`;
                 
                 let imageHTML = trade.image 
-                    ? `<button onclick="showImageModal('${trade.image}'); event.stopImmediatePropagation();" class="px-3 py-1 text-xs bg-slate-700 hover:bg-slate-600 rounded-full flex items-center gap-x-1.5 text-slate-300">
+                    ? `<button onclick="showImageOnRight('${trade.image}'); event.stopImmediatePropagation();" class="px-3 py-1 text-xs bg-slate-700 hover:bg-slate-600 rounded-full flex items-center gap-x-1.5 text-slate-300">
                         <i class="fa-solid fa-image text-[10px]"></i>
                         <span>View</span>
                       </button>` 
@@ -1173,7 +1173,7 @@
                         <div class="flex items-center gap-x-2">
                             <span class="font-mono text-xl text-blue-400">${trade.symbol}</span>
                             <span class="ml-3 text-xs px-2 py-0.5 bg-slate-700 rounded">${dateStr}</span>
-                            ${trade.image ? `<button onclick="showImageModal('${trade.image}'); event.stopImmediatePropagation();" class="ml-2 px-2 py-0.5 text-xs bg-blue-600 hover:bg-blue-700 rounded flex items-center gap-x-1"><i class="fa-solid fa-image text-[10px]"></i><span>圖片</span></button>` : ''}
+                            ${trade.image ? `<button onclick="showImageOnRight('${trade.image}'); event.stopImmediatePropagation();" class="ml-2 px-2 py-0.5 text-xs bg-blue-600 hover:bg-blue-700 rounded flex items-center gap-x-1"><i class="fa-solid fa-image text-[10px]"></i><span>圖片</span></button>` : ''}
                         </div>
                         <button onclick="saveTradeNote('${trade.id}', this)" class="px-4 py-1 text-xs bg-emerald-600 hover:bg-emerald-700 rounded-full">儲存筆記</button>
                     </div>
