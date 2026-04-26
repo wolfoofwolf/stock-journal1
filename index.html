@@ -41,7 +41,7 @@
 <body class="bg-slate-950 text-slate-100">
     
     <!-- Login Screen -->
-    <div id="login-screen" class="fixed inset-0 bg-slate-950 z-[500] flex items-center justify-center">
+    <div id="login-screen" class="fixed inset-0 bg-slate-950 z-[300] flex items-center justify-center">
         <div class="w-full max-w-md px-6">
             <div class="text-center mb-10">
                 <div class="flex justify-center mb-6">
@@ -110,11 +110,6 @@
                         <button onclick="showFavorites()" class="w-full flex items-center gap-x-3 px-4 py-3 text-left hover:bg-slate-800 rounded-2xl transition-all">
                             <i class="fa-solid fa-star text-yellow-500 w-5"></i>
                             <span class="font-medium">收藏的交易</span>
-                        </button>
-                        
-                        <button onclick="showTradeNotes()" class="w-full flex items-center gap-x-3 px-4 py-3 text-left hover:bg-slate-800 rounded-2xl transition-all">
-                            <i class="fa-solid fa-book text-emerald-500 w-5"></i>
-                            <span class="font-medium">交易筆記</span>
                         </button>
                     </div>
                 </div>
@@ -447,11 +442,6 @@
                                         class="filter-btn px-3 py-1 rounded-full bg-slate-700 hover:bg-slate-600">Swing</button>
                             </div>
                             
-                            <div class="flex items-center gap-x-2 ml-4">
-                                <input type="date" id="date-search" class="px-3 py-1 text-xs bg-slate-800 border border-slate-600 rounded-xl text-white" onchange="filterByDate()">
-                                <button onclick="clearDateFilter()" class="px-3 py-1 text-xs bg-slate-700 hover:bg-slate-600 rounded-xl">清除</button>
-                            </div>
-                            
                             <span id="history-count" class="text-xs bg-slate-700 px-3 py-1 rounded-full">0 筆</span>
                         </div>
                         
@@ -483,7 +473,7 @@
     </div>
     
     <!-- Image Modal -->
-    <div id="image-modal" onclick="closeImageModal()" class="hidden fixed inset-0 bg-black/80 z-[100] flex items-start justify-start p-4 pt-8">
+    <div id="image-modal" onclick="closeImageModal()" class="hidden fixed inset-0 bg-black/80 z-[100] flex items-center justify-center p-4">
         <div onclick="event.stopImmediatePropagation()" class="max-w-[90%] max-h-[90%] relative">
             <img id="modal-image" class="max-w-full max-h-[85vh] rounded-3xl shadow-2xl" alt="交易圖片">
             <button onclick="closeImageModal()" class="absolute -top-3 -right-3 w-9 h-9 bg-white dark:bg-slate-800 rounded-full flex items-center justify-center shadow-xl border border-slate-200">
@@ -539,7 +529,7 @@
                 return;
             }
             
-            let html = '<div class="fixed inset-0 bg-black/80 z-[500] flex items-start justify-start p-4 pt-8" onclick="this.remove()">';
+            let html = '<div class="fixed inset-0 bg-black/80 z-[300] flex items-center justify-center p-4" onclick="this.remove()">';
             html += '<div onclick="event.stopImmediatePropagation()" class="bg-slate-900 rounded-3xl w-full max-w-5xl max-h-[85vh] overflow-auto p-5">';
             html += '<div class="flex justify-between items-center mb-6"><h2 class="text-2xl font-bold">收藏的交易</h2><button onclick="this.closest(\'.fixed\').remove()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-times text-xl"></i></button></div>';
             html += '<div class="space-y-4">';
@@ -793,15 +783,6 @@
             renderTrades();
         }
         
-        function filterByDate() {
-            renderTrades();
-        }
-        
-        function clearDateFilter() {
-            document.getElementById('date-search').value = '';
-            renderTrades();
-        }
-        
         function selectOutcome(type) {
             const winLabel = document.getElementById('outcome-win');
             const lossLabel = document.getElementById('outcome-loss');
@@ -875,12 +856,6 @@
             let filteredTrades = trades;
             if (currentFilter !== 'all') {
                 filteredTrades = trades.filter(t => t.tradeType === currentFilter);
-            }
-            
-            // Date filter
-            const dateSearch = document.getElementById('date-search');
-            if (dateSearch && dateSearch.value) {
-                filteredTrades = filteredTrades.filter(t => t.date === dateSearch.value);
             }
             
             tbody.innerHTML = '';
@@ -1049,7 +1024,7 @@
         
         function showReasonModal(reason) {
             const html = `
-                <div class="fixed inset-0 bg-black/80 z-[400] flex items-start justify-start p-4 pt-8" onclick="this.remove()">
+                <div class="fixed inset-0 bg-black/80 z-[400] flex items-center justify-center p-4" onclick="this.remove()">
                     <div onclick="event.stopImmediatePropagation()" class="bg-slate-900 rounded-3xl max-w-lg w-full p-5 border border-slate-700">
                         <div class="flex justify-between items-center mb-4">
                             <h3 class="text-xl font-bold">交易原因</h3>
@@ -1103,7 +1078,7 @@
         
         function showToast(msg) {
             const toast = document.createElement('div');
-            toast.className = 'fixed bottom-6 right-6 bg-emerald-600 text-white px-6 py-3 rounded-2xl shadow-xl flex items-center gap-x-3 z-[500]';
+            toast.className = 'fixed bottom-6 right-6 bg-emerald-600 text-white px-6 py-3 rounded-2xl shadow-xl flex items-center gap-x-3 z-[300]';
             toast.innerHTML = msg;
             document.body.appendChild(toast);
             setTimeout(() => toast.remove(), 2500);
@@ -1150,70 +1125,6 @@
                 if (filterAll) filterAll.classList.add('active', 'bg-blue-600');
             }, 300);
         };
-        
-        function showTradeNotes() {
-            toggleSidebar();
-            if (trades.length === 0) {
-                alert('目前沒有交易紀錄！');
-                return;
-            }
-            
-            let html = '<div class="fixed inset-0 bg-black/80 z-[500] flex items-start justify-start p-4 pt-8" onclick="this.remove()">';
-            html += '<div onclick="event.stopImmediatePropagation()" class="bg-slate-900 rounded-3xl w-[65%] max-h-[90vh] overflow-auto p-6">';
-            html += '<div class="flex justify-between items-center mb-6"><h2 class="text-2xl font-bold">交易筆記</h2><button onclick="this.closest(\'.fixed\').remove()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-times text-xl"></i></button></div>';
-            html += '<div class="space-y-4">';
-            
-            trades.forEach(trade => {
-                const dateStr = trade.date ? new Date(trade.date).toLocaleDateString('zh-TW') : '';
-                const note = trade.note || '';
-                
-                html += `
-                <div class="bg-slate-800 rounded-2xl p-5">
-                    <div class="flex justify-between items-start mb-3">
-                        <div class="flex items-center gap-x-2">
-                            <span class="font-mono text-xl text-blue-400">${trade.symbol}</span>
-                            <span class="ml-3 text-xs px-2 py-0.5 bg-slate-700 rounded">${dateStr}</span>
-                            ${trade.image ? `<button onclick="showImageModal('${trade.image}'); event.stopImmediatePropagation();" class="ml-2 px-2 py-0.5 text-xs bg-blue-600 hover:bg-blue-700 rounded flex items-center gap-x-1"><i class="fa-solid fa-image text-[10px]"></i><span>圖片</span></button>` : ''}
-                        </div>
-                        <button onclick="saveTradeNote('${trade.id}', this)" class="px-4 py-1 text-xs bg-emerald-600 hover:bg-emerald-700 rounded-full">儲存筆記</button>
-                    </div>
-                    
-                    <textarea class="w-full h-24 bg-slate-900 border border-slate-600 rounded-2xl p-3 text-sm resize-y" placeholder="寫下你對這筆交易的體會...（100字一行，300字後會出現捲軸）" data-trade-id="${trade.id}">${note}</textarea>
-                    <div class="text-xs text-slate-500 mt-1">💡 100字為一行，超過300字會自動出現捲軸</div>
-                </div>`;
-            });
-            
-            html += '</div></div></div>';
-            document.body.insertAdjacentHTML('beforeend', html);
-        }
-        
-        async function saveTradeNote(tradeId, btn) {
-            const textarea = btn.parentElement.parentElement.querySelector('textarea');
-            const noteText = textarea.value.trim();
-            
-            if (!noteText) {
-                alert('請輸入筆記內容');
-                return;
-            }
-            
-            try {
-                await db.collection('users').doc(currentUser.uid).collection('trades').doc(tradeId).update({
-                    note: noteText
-                });
-                
-                const trade = trades.find(t => t.id === tradeId);
-                if (trade) trade.note = noteText;
-                
-                btn.textContent = '已儲存 ✓';
-                btn.classList.add('bg-emerald-700');
-                setTimeout(() => {
-                    btn.textContent = '儲存筆記';
-                    btn.classList.remove('bg-emerald-700');
-                }, 1500);
-            } catch (error) {
-                alert('儲存失敗：' + error.message);
-            }
-        }
         
         console.log('%c[StockJournal] 最終穩定版本已載入 ✅', 'color:#22c55e');
     </script>
