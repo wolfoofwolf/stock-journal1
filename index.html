@@ -805,12 +805,20 @@
                     <td class="px-4 py-3 text-center">${typeHTML}</td>
                     <td class="px-4 py-3 text-center text-xs text-purple-400">${trade.riskReward}</td>
                     <td class="px-4 py-3 text-center">${outcomeHTML}</td>
-                    <td class="px-4 py-3 text-xs text-slate-300 max-w-[180px] truncate cursor-pointer hover:text-white" onclick="showReasonModal('${trade.reason.replace(/'/g, "\'")})'">${trade.reason}</td>
+                    <td class="px-4 py-3 text-xs text-slate-300 max-w-[180px] truncate cursor-pointer hover:text-white reason-cell" data-reason="${trade.reason.replace(/"/g, '&quot;')}">${trade.reason}</td>
                     <td class="px-4 py-3 text-center">${imageHTML}</td>
                     <td class="px-2 py-3">${starHTML}</td>
                     <td class="px-2 py-3">${deleteHTML}</td>
                 `;
                 tbody.appendChild(row);
+            });
+            
+            // Add click event for reason cells
+            document.querySelectorAll('.reason-cell').forEach(cell => {
+                cell.onclick = function() {
+                    const reason = this.getAttribute('data-reason');
+                    showReasonModal(reason);
+                };
             });
         }
         
