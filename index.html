@@ -36,6 +36,23 @@
         .custom-scrollbar::-webkit-scrollbar-thumb:hover {
             background: linear-gradient(180deg, #4f46e5, #9333ea);
         }
+        
+        /* Global Scrollbar Styles */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #1e2937;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(180deg, #6366f1, #a855f7, #ec4899);
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(180deg, #4f46e5, #9333ea, #db2777);
+        }
     </style>
 </head>
 <body class="bg-slate-950 text-slate-100">
@@ -631,7 +648,7 @@
                         <div class="space-y-4">
                             <div>
                                 <label class="text-sm text-slate-400 block mb-1">股票代碼（選填）</label>
-                                <input type="text" id="calc-symbol" placeholder="2330" class="w-full px-4 py-3 bg-slate-800 border border-slate-600 rounded-2xl font-mono">
+                                <input type="text" id="calc-symbol" placeholder="SPY" class="w-full px-4 py-3 bg-slate-800 border border-slate-600 rounded-2xl font-mono">
                             </div>
                             
                             <div>
