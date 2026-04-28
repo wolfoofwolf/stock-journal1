@@ -412,13 +412,18 @@
                             
                             <div>
                                 <label id="reason-label" class="text-sm text-slate-400 block mb-1">成功原因</label>
-                                <textarea id="trade-reason" rows="3" placeholder="例如：突破月線..." class="w-full px-4 py-3 bg-slate-800 border border-slate-600 rounded-2xl"></textarea>
+                                <textarea id="trade-reason" rows="5" placeholder="技術面優勢:
+基本面優勢:
+
+成功和失敗的原因:
+
+改善位置:" class="w-full px-4 py-3 bg-slate-800 border border-slate-600 rounded-2xl"></textarea>
                             </div>
                             
                             <div>
                                 <label class="text-sm text-slate-400 block mb-1">上傳圖片</label>
                                 <label class="block border-2 border-dashed border-slate-600 rounded-2xl p-4 text-center hover:border-blue-500 transition-colors cursor-pointer">
-                                    <input type="file" id="image-upload" accept="image/*" class="hidden" onchange="previewImage(this)">
+                                    <input type="file" id="image-upload" accept="image/*" multiple class="hidden" onchange="previewImages(this)">
                                     <div id="upload-placeholder">
                                         <i class="fa-solid fa-cloud-upload-alt text-3xl text-slate-500 mb-2"></i>
                                         <p class="text-sm text-slate-400">點擊上傳圖片</p>
@@ -516,7 +521,7 @@
         let currentUser = null;
         let trades = [];
         let favorites = [];
-        let currentImageBase64 = null;
+        let currentImages = [];
         let currentTradeType = 'long';
         let currentStrategy = 'META';
         let currentFilter = 'all';
@@ -846,32 +851,58 @@
             await loadTradesFromFirestore();
         }
         
-        function previewImage(input) {
-            const file = input.files[0];
-            if (!file) return;
-            if (file.size > 5 * 1024 * 1024) {
-                alert('圖片大小不能超過 5MB');
-                input.value = '';
-                return;
+        function previewImages(input) {
+            const files = Array.from(input.files);
+            if (files.length === 0) return;
+            
+            const preview = document.getElementById('image-preview');
+            const placeholder = document.getElementById('upload-placeholder');
+            
+            placeholder.classList.add('hidden');
+            preview.classList.remove('hidden');
+            
+            // Clear previous previews if starting fresh
+            if (currentImages.length === 0) {
+                preview.innerHTML = '<div class="grid grid-cols-3 gap-2" id="multi-image-grid"></div>';
             }
             
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                currentImageBase64 = e.target.result;
-                document.getElementById('upload-placeholder').classList.add('hidden');
-                const preview = document.getElementById('image-preview');
-                preview.classList.remove('hidden');
-                document.getElementById('preview-img').src = currentImageBase64;
-            };
-            reader.readAsDataURL(file);
+            const grid = document.getElementById('multi-image-grid');
+            
+            files.forEach((file, index) => {
+                if (file.size > 5 * 1024 * 1024) {
+                    alert(`圖片 ${file.name} 大小不能超過 5MB，已跳過`);
+                    return;
+                }
+                
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const imgData = e.target.result;
+                    currentImages.push(imgData);
+                    
+                    const imgContainer = document.createElement('div');
+                    imgContainer.className = 'relative group';
+                    imgContainer.innerHTML = `
+                        <img src="${imgData}" class="w-full h-20 object-cover rounded-xl border border-slate-600" alt="預覽">
+                        <button onclick="removeMultiImage(${currentImages.length - 1}, this)" class="absolute -top-1 -right-1 w-5 h-5 bg-red-600 text-white rounded-full text-xs opacity-0 group-hover:opacity-100 transition-all">×</button>
+                    `;
+                    grid.appendChild(imgContainer);
+                };
+                reader.readAsDataURL(file);
+            });
+            
+            // Clear the input so user can add more
+            input.value = '';
         }
         
-        function removeImagePreview(e) {
-            e.preventDefault();
-            currentImageBase64 = null;
-            document.getElementById('upload-placeholder').classList.remove('hidden');
-            document.getElementById('image-preview').classList.add('hidden');
-            document.getElementById('image-upload').value = '';
+        function removeMultiImage(index, btn) {
+            currentImages.splice(index, 1);
+            btn.parentElement.remove();
+            
+            if (currentImages.length === 0) {
+                document.getElementById('upload-placeholder').classList.remove('hidden');
+                document.getElementById('image-preview').classList.add('hidden');
+                document.getElementById('image-preview').innerHTML = '';
+            }
         }
         
         function selectTradeType(type) {
@@ -956,7 +987,7 @@
                 strategy: currentStrategy,
                 outcome: outcome,
                 reason: reason || '未填寫',
-                image: currentImageBase64,
+                images: currentImages.length > 0 ? currentImages : null,
                 createdAt: firebase.firestore.FieldValue.serverTimestamp()
             };
             
@@ -968,10 +999,11 @@
             document.getElementById('pnl-amount').value = '';
             document.getElementById('risk-reward').value = '';
             document.getElementById('trade-reason').value = '';
-            currentImageBase64 = null;
+            currentImages = [];
             document.getElementById('upload-placeholder').classList.remove('hidden');
             document.getElementById('image-preview').classList.add('hidden');
             document.getElementById('image-upload').value = '';
+            document.getElementById('image-preview').innerHTML = '';
             selectTradeType('long');
         }
         
@@ -1021,12 +1053,22 @@
                 else if (trade.strategy === 'BO') strategyHTML = `<span class="px-2 py-0.5 text-xs bg-amber-900 text-amber-400 rounded">B.O</span>`;
                 else strategyHTML = `<span class="px-2 py-0.5 text-xs bg-slate-700 text-slate-400 rounded">N/A</span>`;
                 
-                let imageHTML = trade.image 
-                    ? `<button onclick="showImageModal('${trade.image}'); event.stopImmediatePropagation();" class="px-3 py-1 text-xs bg-slate-700 hover:bg-slate-600 rounded-full flex items-center gap-x-1.5 text-slate-300">
+                let imageHTML = '';
+                if (trade.images && trade.images.length > 0) {
+                    const count = trade.images.length;
+                    imageHTML = `<button onclick="showMultiImages('${trade.id}'); event.stopImmediatePropagation();" class="px-3 py-1 text-xs bg-slate-700 hover:bg-slate-600 rounded-full flex items-center gap-x-1.5 text-slate-300">
+                        <i class="fa-solid fa-images text-[10px]"></i>
+                        <span>${count}張</span>
+                      </button>`;
+                } else if (trade.image) {
+                    // Backward compatibility
+                    imageHTML = `<button onclick="showImageModal('${trade.image}'); event.stopImmediatePropagation();" class="px-3 py-1 text-xs bg-slate-700 hover:bg-slate-600 rounded-full flex items-center gap-x-1.5 text-slate-300">
                         <i class="fa-solid fa-image text-[10px]"></i>
                         <span>View</span>
-                      </button>` 
-                    : `<span class="text-slate-500 text-xs">無</span>`;
+                      </button>`;
+                } else {
+                    imageHTML = `<span class="text-slate-500 text-xs">無</span>`;
+                }
                 
                 const isFavorite = favorites.some(f => f.id === trade.id);
                 const starHTML = `<button onclick="toggleFavorite('${trade.id}', event)" class="p-1 ${isFavorite ? 'text-yellow-400' : 'text-slate-500 hover:text-yellow-400'}"><i class="fa-solid fa-star"></i></button>`;
@@ -1140,6 +1182,23 @@
             img.src = base64;
             modal.style.display = 'flex';
             modal.classList.remove('hidden');
+        }
+        
+        function showMultiImages(tradeId) {
+            const trade = trades.find(t => t.id === tradeId);
+            if (!trade || !trade.images || trade.images.length === 0) return;
+            
+            let html = '<div class="fixed inset-0 bg-black/90 z-[400] flex items-center justify-center p-4" onclick="this.remove()">';
+            html += '<div onclick="event.stopImmediatePropagation()" class="bg-slate-900 rounded-3xl w-full max-w-4xl max-h-[90vh] overflow-auto p-6">';
+            html += `<div class="flex justify-between items-center mb-4"><h3 class="text-xl font-bold">交易圖片 (${trade.images.length} 張)</h3><button onclick="this.closest('.fixed').remove()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-times text-xl"></i></button></div>`;
+            html += '<div class="grid grid-cols-2 md:grid-cols-3 gap-4">';
+            
+            trade.images.forEach((imgData, index) => {
+                html += `<div class="relative group"><img src="${imgData}" onclick="showImageModal('${imgData}'); this.closest('.fixed').remove();" class="w-full rounded-2xl border border-slate-600 cursor-pointer hover:opacity-90 transition-all" alt="圖片 ${index + 1}"></div>`;
+            });
+            
+            html += '</div></div></div>';
+            document.body.insertAdjacentHTML('beforeend', html);
         }
         
         function closeImageModal() {
