@@ -1173,15 +1173,41 @@
             document.getElementById('performance-score').textContent = score;
             document.getElementById('score-bar').style.width = score + '%';
             
+            // Day Trade 勝率
+            const dayTrades = trades.filter(t => {
+                const types = Array.isArray(t.tradeType) ? t.tradeType : [t.tradeType];
+                return types.includes('daytrade');
+            });
+            const dayWins = dayTrades.filter(t => t.outcome === 'win').length;
+            const dayWinRate = dayTrades.length > 0 ? Math.round((dayWins / dayTrades.length) * 100) : 0;
+            const dayEl = document.getElementById('daytrade-win-rate');
+            if (dayEl) dayEl.textContent = dayWinRate;
+            
+            // Swing Trade 勝率
+            const swingTrades = trades.filter(t => {
+                const types = Array.isArray(t.tradeType) ? t.tradeType : [t.tradeType];
+                return types.includes('swing');
+            });
+            const swingWins = swingTrades.filter(t => t.outcome === 'win').length;
+            const swingWinRate = swingTrades.length > 0 ? Math.round((swingWins / swingTrades.length) * 100) : 0;
+            const swingEl = document.getElementById('swing-win-rate');
+            if (swingEl) swingEl.textContent = swingWinRate;
+            
             // Long 勝率
-            const longTrades = trades.filter(t => t.tradeType === 'long');
+            const longTrades = trades.filter(t => {
+                const types = Array.isArray(t.tradeType) ? t.tradeType : [t.tradeType];
+                return types.includes('long');
+            });
             const longWins = longTrades.filter(t => t.outcome === 'win').length;
             const longWinRate = longTrades.length > 0 ? Math.round((longWins / longTrades.length) * 100) : 0;
             const longEl = document.getElementById('long-win-rate');
             if (longEl) longEl.textContent = longWinRate;
             
             // Short 勝率
-            const shortTrades = trades.filter(t => t.tradeType === 'short');
+            const shortTrades = trades.filter(t => {
+                const types = Array.isArray(t.tradeType) ? t.tradeType : [t.tradeType];
+                return types.includes('short');
+            });
             const shortWins = shortTrades.filter(t => t.outcome === 'win').length;
             const shortWinRate = shortTrades.length > 0 ? Math.round((shortWins / shortTrades.length) * 100) : 0;
             const shortEl = document.getElementById('short-win-rate');
