@@ -111,6 +111,11 @@
                             <i class="fa-solid fa-star text-yellow-500 w-5"></i>
                             <span class="font-medium">收藏的交易</span>
                         </button>
+                        
+                        <button onclick="showZeroCostCalculator()" class="w-full flex items-center gap-x-3 px-4 py-3 text-left hover:bg-slate-800 rounded-2xl transition-all">
+                            <i class="fa-solid fa-calculator text-emerald-500 w-5"></i>
+                            <span class="font-medium">零成本持股計算器</span>
+                        </button>
                     </div>
                 </div>
                 
@@ -591,6 +596,102 @@
             
             html += '</div></div></div>';
             document.body.insertAdjacentHTML('beforeend', html);
+        }
+        
+        function showZeroCostCalculator() {
+            toggleSidebar();
+            
+            const html = `
+                <div class="fixed inset-0 bg-black/80 z-[300] flex items-center justify-center p-4" onclick="this.remove()">
+                    <div onclick="event.stopImmediatePropagation()" class="bg-slate-900 rounded-3xl w-full max-w-md p-6 border border-slate-700">
+                        <div class="flex justify-between items-center mb-6">
+                            <h2 class="text-2xl font-bold flex items-center gap-x-2">
+                                <i class="fa-solid fa-calculator text-emerald-500"></i>
+                                <span>零成本持股計算器</span>
+                            </h2>
+                            <button onclick="this.closest('.fixed').remove()" class="text-slate-400 hover:text-white">
+                                <i class="fa-solid fa-times text-xl"></i>
+                            </button>
+                        </div>
+                        
+                        <div class="space-y-4">
+                            <div>
+                                <label class="text-sm text-slate-400 block mb-1">股票代碼（選填）</label>
+                                <input type="text" id="calc-symbol" placeholder="2330" class="w-full px-4 py-3 bg-slate-800 border border-slate-600 rounded-2xl font-mono">
+                            </div>
+                            
+                            <div>
+                                <label class="text-sm text-slate-400 block mb-1">原始總成本（元）</label>
+                                <input type="number" id="calc-total-cost" placeholder="100000" class="w-full px-4 py-3 bg-slate-800 border border-slate-600 rounded-2xl text-lg font-semibold">
+                            </div>
+                            
+                            <div>
+                                <label class="text-sm text-slate-400 block mb-1">目前股價（元）</label>
+                                <input type="number" id="calc-current-price" placeholder="85.5" step="0.01" class="w-full px-4 py-3 bg-slate-800 border border-slate-600 rounded-2xl text-lg font-semibold">
+                            </div>
+                            
+                            <div>
+                                <label class="text-sm text-slate-400 block mb-1">原始持股數（股，選填）</label>
+                                <input type="number" id="calc-original-shares" placeholder="1000" class="w-full px-4 py-3 bg-slate-800 border border-slate-600 rounded-2xl">
+                                <p class="text-xs text-slate-500 mt-1">如果填寫，會計算賣出張數</p>
+                            </div>
+                            
+                            <button onclick="calculateZeroCost()" 
+                                    class="w-full py-4 bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-bold rounded-2xl flex items-center justify-center gap-x-2 mt-4">
+                                <i class="fa-solid fa-magic"></i>
+                                <span>計算要賣出多少才能零成本</span>
+                            </button>
+                            
+                            <div id="calc-result" class="hidden mt-4 p-4 bg-slate-800 rounded-2xl border border-emerald-700">
+                                <div class="text-center">
+                                    <p class="text-sm text-slate-400">建議賣出</p>
+                                    <div id="calc-result-value" class="text-4xl font-bold text-emerald-400 mt-1"></div>
+                                    <p id="calc-result-unit" class="text-sm text-slate-400 mt-1"></p>
+                                </div>
+                                <div class="mt-3 text-xs text-slate-500 text-center">
+                                    賣出後，剩餘持股的成本將變為 <span class="text-emerald-400 font-semibold">0 元</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.body.insertAdjacentHTML('beforeend', html);
+        }
+        
+        function calculateZeroCost() {
+            const totalCost = parseFloat(document.getElementById('calc-total-cost').value);
+            const currentPrice = parseFloat(document.getElementById('calc-current-price').value);
+            const originalShares = parseFloat(document.getElementById('calc-original-shares').value) || 0;
+            const symbol = document.getElementById('calc-symbol').value.trim().toUpperCase() || '股票';
+            
+            if (!totalCost || !currentPrice || currentPrice <= 0) {
+                alert('請輸入原始總成本和目前股價');
+                return;
+            }
+            
+            // 賣出股數 = 原始總成本 / 目前股價
+            const sharesToSell = Math.ceil(totalCost / currentPrice);
+            
+            // 賣出張數 (1張 = 1000股)
+            const lotsToSell = (originalShares > 0) 
+                ? (sharesToSell / 1000).toFixed(2) 
+                : (sharesToSell / 1000).toFixed(2);
+            
+            const resultDiv = document.getElementById('calc-result');
+            const valueDiv = document.getElementById('calc-result-value');
+            const unitDiv = document.getElementById('calc-result-unit');
+            
+            if (originalShares > 0) {
+                valueDiv.innerHTML = `${lotsToSell} <span class="text-xl">張</span>`;
+                unitDiv.innerHTML = `（約 ${sharesToSell.toLocaleString()} 股）`;
+            } else {
+                valueDiv.innerHTML = `${sharesToSell.toLocaleString()} <span class="text-xl">股</span>`;
+                unitDiv.innerHTML = `（約 ${lotsToSell} 張）`;
+            }
+            
+            resultDiv.classList.remove('hidden');
+            resultDiv.classList.add('block');
         }
         
         async function toggleFavorite(tradeId, event) {
