@@ -520,7 +520,7 @@
         let trades = [];
         let favorites = [];
         let currentImages = [];
-        let currentTradeType = 'long';
+        let currentTradeTypes = ['long'];
         let currentStrategy = 'META';
         let currentFilter = 'all';
         
@@ -678,7 +678,7 @@
             const buyAvgPrice = parseFloat(document.getElementById('buy-avg-price').value) || 0;
             const sellAvgPrice = parseFloat(document.getElementById('sell-avg-price').value) || 0;
             const pnlInput = document.getElementById('pnl-amount');
-            const isShort = currentTradeType === 'short';
+            const isShort = currentTradeTypes.includes('short');
             
             // Only auto-calculate if all three fields have values
             if (positionAmount > 0 && buyAvgPrice > 0 && sellAvgPrice > 0) {
@@ -915,15 +915,20 @@
         }
         
         function selectTradeType(type) {
-            document.getElementById('type-short').classList.remove('active', 'border-blue-500');
-            document.getElementById('type-long').classList.remove('active', 'border-blue-500');
-            document.getElementById('type-daytrade').classList.remove('active', 'border-blue-500');
-            document.getElementById('type-swing').classList.remove('active', 'border-blue-500');
+            const btn = document.getElementById('type-' + type);
+            const index = currentTradeTypes.indexOf(type);
             
-            document.getElementById('type-' + type).classList.add('active', 'border-blue-500');
-            currentTradeType = type;
+            if (index > -1) {
+                // Already selected, remove it
+                currentTradeTypes.splice(index, 1);
+                btn.classList.remove('active', 'border-blue-500');
+            } else {
+                // Not selected, add it
+                currentTradeTypes.push(type);
+                btn.classList.add('active', 'border-blue-500');
+            }
             
-            // Recalculate P&L with correct formula for Short/Long
+            // Recalculate P&L (use first selected type for formula)
             calculatePnL();
         }
         
@@ -995,7 +1000,7 @@
                 amount: amount,
                 pnl: pnl,
                 riskReward: riskReward || 'N/A',
-                tradeType: currentTradeType,
+                tradeType: currentTradeTypes,
                 strategy: currentStrategy,
                 outcome: outcome,
                 reason: reason || '未填寫',
@@ -1053,10 +1058,13 @@
                     : `<span class="inline-flex items-center justify-center w-7 h-7 bg-red-500 rounded-full"><i class="fa-solid fa-times text-white text-sm"></i></span>`;
                 
                 let typeHTML = '';
-                if (trade.tradeType === 'short') typeHTML = `<span class="px-2 py-0.5 text-xs bg-orange-900 text-emerald-400 rounded">Short</span>`;
-                else if (trade.tradeType === 'long') typeHTML = `<span class="px-2 py-0.5 text-xs bg-emerald-900 text-emerald-400 rounded">Long</span>`;
-                else if (trade.tradeType === 'daytrade') typeHTML = `<span class="px-2 py-0.5 text-xs bg-purple-900 text-purple-400 rounded">Day</span>`;
-                else typeHTML = `<span class="px-2 py-0.5 text-xs bg-sky-900 text-sky-400 rounded">Swing</span>`;
+                const types = Array.isArray(trade.tradeType) ? trade.tradeType : [trade.tradeType];
+                types.forEach(t => {
+                    if (t === 'short') typeHTML += `<span class="px-2 py-0.5 text-xs bg-orange-900 text-orange-400 rounded mr-1">Short</span>`;
+                    else if (t === 'long') typeHTML += `<span class="px-2 py-0.5 text-xs bg-emerald-900 text-emerald-400 rounded mr-1">Long</span>`;
+                    else if (t === 'daytrade') typeHTML += `<span class="px-2 py-0.5 text-xs bg-purple-900 text-purple-400 rounded mr-1">Day</span>`;
+                    else if (t === 'swing') typeHTML += `<span class="px-2 py-0.5 text-xs bg-sky-900 text-sky-400 rounded mr-1">Swing</span>`;
+                });
                 
                 let strategyHTML = '';
                 if (trade.strategy === 'META') strategyHTML = `<span class="px-2 py-0.5 text-xs bg-purple-900 text-purple-400 rounded">M.E.T.A</span>`;
@@ -1319,7 +1327,7 @@
             setTimeout(() => {
                 const longBtn = document.getElementById('type-long');
                 if (longBtn) longBtn.classList.add('active', 'border-blue-500');
-                currentTradeType = 'long';
+                currentTradeTypes = ['long'];
                 
                 const metaBtn = document.getElementById('strategy-META');
                 if (metaBtn) metaBtn.classList.add('active', 'border-purple-500');
