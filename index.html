@@ -1226,7 +1226,7 @@
                             </button>
                         </div>
                         <div class="bg-slate-800 rounded-2xl p-4 text-sm whitespace-pre-wrap break-words max-h-[400px] overflow-y-auto custom-scrollbar pr-2">
-                            ${reason.replace(/\n/g, '<br>')}
+                            ${(reason || '').replace(/\\n/g, '\n').replace(/\n/g, '<br>')}
                         </div>
                     </div>
                 </div>
@@ -1316,6 +1316,12 @@
                 
                 const filterAll = document.getElementById('filter-all');
                 if (filterAll) filterAll.classList.add('active', 'bg-blue-600');
+                
+                // Set default reason text
+                const reasonTextarea = document.getElementById('trade-reason');
+                if (reasonTextarea && !reasonTextarea.value) {
+                    reasonTextarea.value = '技術面優勢:\n基本面優勢:\n\n改善位置:';
+                }
             }, 300);
         };
         
