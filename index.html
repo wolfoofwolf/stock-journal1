@@ -684,10 +684,10 @@
             
             if (originalShares > 0) {
                 valueDiv.innerHTML = `${lotsToSell} <span class="text-xl">張</span>`;
-                unitDiv.innerHTML = `（約 ${sharesToSell.toLocaleString()} 股）`;
+                unitDiv.innerHTML = `（約 ${sharesToSell.toLocaleString()} 股）<br>約 <span class="text-emerald-400">${Math.round(sharesToSell * currentPrice).toLocaleString()}</span> 元`;
             } else {
                 valueDiv.innerHTML = `${sharesToSell.toLocaleString()} <span class="text-xl">股</span>`;
-                unitDiv.innerHTML = `（約 ${lotsToSell} 張）`;
+                unitDiv.innerHTML = `（約 ${lotsToSell} 張）<br>約 <span class="text-emerald-400">${Math.round(sharesToSell * currentPrice).toLocaleString()}</span> 元`;
             }
             
             resultDiv.classList.remove('hidden');
@@ -1013,8 +1013,8 @@
                     <td class="px-4 py-3 text-right font-semibold">${amountDisplay}</td>
                     <td class="px-4 py-3 text-right font-semibold ${pnlColor}">${pnlDisplay}</td>
                     <td class="px-4 py-3 text-center ">${typeHTML}</td>
-                    <td class="px-4 py-3 text-center ">${strategyHTML}</td>
                     <td class="px-4 py-3 text-center text-xs text-purple-400">${trade.riskReward}</td>
+                    <td class="px-4 py-3 text-center ">${strategyHTML}</td>
                     <td class="px-4 py-3 text-center ">${outcomeHTML}</td>
                     <td class="px-4 py-3 text-center">
                         <button onclick="showReasonModal('${trade.reason.replace(/'/g, "\\'")}'); event.stopImmediatePropagation();" 
