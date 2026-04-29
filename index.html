@@ -595,7 +595,7 @@
                 
                 let imageHTML = '';
                 if (trade.image) {
-                    imageHTML = `<img src="${trade.image}" onclick="showImageModal('${trade.image}'); event.target.closest('.fixed').remove();" class="w-16 h-16 object-cover rounded-xl border border-slate-600 cursor-pointer" alt="圖片">`;
+                    imageHTML = `<img src="${trade.image}" onclick="showImageModal('${trade.image}');" class="w-16 h-16 object-cover rounded-xl border border-slate-600 cursor-pointer" alt="圖片">`;
                 }
                 
                 html += `
@@ -1275,7 +1275,7 @@
             html += '<div class="grid grid-cols-2 md:grid-cols-3 gap-4">';
             
             trade.images.forEach((imgData, index) => {
-                html += `<div class="relative group"><img src="${imgData}" onclick="showImageModal('${imgData}'); this.closest('.fixed').remove();" class="w-full rounded-2xl border border-slate-600 cursor-pointer hover:opacity-90 transition-all" alt="圖片 ${index + 1}"></div>`;
+                html += `<div class="relative group"><img src="${imgData}" onclick="showImageModal('${imgData}');" class="w-full rounded-2xl border border-slate-600 cursor-pointer hover:opacity-90 transition-all" alt="圖片 ${index + 1}"></div>`;
             });
             
             html += '</div></div></div>';
@@ -1384,7 +1384,7 @@
                     if (note.images && note.images.length > 0) {
                         html += `<div class="grid grid-cols-3 gap-2 mt-3">`;
                         note.images.forEach(img => {
-                            html += `<img src="${img}" onclick="showImageModal('${img}'); event.target.closest('.fixed').remove();" class="w-full h-24 object-cover rounded-xl border border-slate-600 cursor-pointer hover:opacity-90" alt="筆記圖片">`;
+                            html += `<img src="${img}" onclick="showImageModal('${img}');" class="w-full h-24 object-cover rounded-xl border border-slate-600 cursor-pointer hover:opacity-90" alt="筆記圖片">`;
                         });
                         html += `</div>`;
                     }
