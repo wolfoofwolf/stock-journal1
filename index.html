@@ -127,6 +127,11 @@
                         <button onclick="showFavorites()" class="w-full flex items-center gap-x-3 px-4 py-3 text-left hover:bg-slate-800 rounded-2xl transition-all">
                             <i class="fa-solid fa-star text-yellow-500 w-5"></i>
                             <span class="font-medium">收藏的交易</span>
+                        
+                        <button onclick="showTradeNotes()" class="w-full flex items-center gap-x-3 px-4 py-3 text-left hover:bg-slate-800 rounded-2xl transition-all">
+                            <i class="fa-solid fa-book text-emerald-500 w-5"></i>
+                            <span class="font-medium">交易筆記</span>
+                        </button>
                         </button>
                         
                         <button onclick="showZeroCostCalculator()" class="w-full flex items-center gap-x-3 px-4 py-3 text-left hover:bg-slate-800 rounded-2xl transition-all">
@@ -1394,3 +1399,161 @@
     </script>
 </body>
 </html>
+// 交易筆記功能
+let tradeNotes = [];
+
+async function showTradeNotes() {
+    toggleSidebar();
+    await loadTradeNotes();
+    
+    let html = '<div class="fixed inset-0 bg-black/80 z-[300] flex items-center justify-center p-4" onclick="this.remove()">';
+    html += '<div onclick="event.stopImmediatePropagation()" class="bg-slate-900 rounded-3xl w-full max-w-4xl max-h-[90vh] overflow-auto p-6">';
+    html += '<div class="flex justify-between items-center mb-6">';
+    html += '<h2 class="text-2xl font-bold flex items-center gap-x-2"><i class="fa-solid fa-book text-emerald-500"></i> 交易筆記</h2>';
+    html += '<div class="flex gap-x-2">';
+    html += '<button onclick="addNewTradeNote(); event.target.closest(\'.fixed\').remove();" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 rounded-xl text-sm font-semibold flex items-center gap-x-2"><i class="fa-solid fa-plus"></i> 新增筆記</button>';
+    html += '<button onclick="this.closest(\'.fixed\').remove()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-times text-xl"></i></button>';
+    html += '</div></div>';
+    
+    if (tradeNotes.length === 0) {
+        html += '<div class="text-center py-12 text-slate-400"><i class="fa-solid fa-book text-6xl mb-4 opacity-50"></i><p>還沒有筆記<br>點擊「新增筆記」開始記錄你的交易心得</p></div>';
+    } else {
+        html += '<div class="space-y-4">';
+        tradeNotes.forEach((note, index) => {
+            const dateStr = note.date ? new Date(note.date).toLocaleDateString('zh-TW', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : '';
+            
+            html += `<div class="bg-slate-800 rounded-2xl p-5 border border-slate-700">`;
+            html += `<div class="flex justify-between items-start mb-3">`;
+            html += `<div class="text-emerald-400 text-sm"><i class="fa-solid fa-calendar mr-2"></i>${dateStr}</div>`;
+            html += `<button onclick="deleteTradeNote(${index}, event)" class="text-red-400 hover:text-red-600"><i class="fa-solid fa-trash"></i></button>`;
+            html += `</div>`;
+            
+            html += `<div class="text-sm whitespace-pre-wrap mb-3">${note.text}</div>`;
+            
+            if (note.images && note.images.length > 0) {
+                html += `<div class="grid grid-cols-3 gap-2 mt-3">`;
+                note.images.forEach(img => {
+                    html += `<img src="${img}" onclick="showImageModal('${img}'); event.target.closest('.fixed').remove();" class="w-full h-24 object-cover rounded-xl border border-slate-600 cursor-pointer hover:opacity-90" alt="筆記圖片">`;
+                });
+                html += `</div>`;
+            }
+            
+            html += `</div>`;
+        });
+        html += '</div>';
+    }
+    
+    html += '</div></div>';
+    document.body.insertAdjacentHTML('beforeend', html);
+}
+
+async function loadTradeNotes() {
+    if (!currentUser) return;
+    const snapshot = await db.collection('users').doc(currentUser.uid).collection('notes').orderBy('date', 'desc').get();
+    tradeNotes = [];
+    snapshot.forEach(doc => tradeNotes.push({ id: doc.id, ...doc.data() }));
+}
+
+function addNewTradeNote() {
+    const html = `
+        <div class="fixed inset-0 bg-black/80 z-[400] flex items-center justify-center p-4" onclick="this.remove()">
+            <div onclick="event.stopImmediatePropagation()" class="bg-slate-900 rounded-3xl w-full max-w-2xl p-6 border border-slate-700">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-xl font-bold">新增交易筆記</h3>
+                    <button onclick="this.closest('.fixed').remove()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-times text-xl"></i></button>
+                </div>
+                
+                <div class="space-y-4">
+                    <div>
+                        <label class="text-sm text-slate-400 block mb-1">筆記內容</label>
+                        <textarea id="note-text" rows="6" placeholder="記錄今天的交易心得、情緒、觀察..." class="w-full px-4 py-3 bg-slate-800 border border-slate-600 rounded-2xl"></textarea>
+                    </div>
+                    
+                    <div>
+                        <label class="text-sm text-slate-400 block mb-1">附加圖片（選填）</label>
+                        <label class="block border-2 border-dashed border-slate-600 rounded-2xl p-4 text-center hover:border-emerald-500 cursor-pointer">
+                            <input type="file" id="note-image-upload" accept="image/*" multiple class="hidden" onchange="previewNoteImages(this)">
+                            <div id="note-upload-placeholder">
+                                <i class="fa-solid fa-cloud-upload-alt text-2xl text-slate-500 mb-2"></i>
+                                <p class="text-sm text-slate-400">點擊上傳圖片</p>
+                            </div>
+                            <div id="note-image-preview" class="hidden grid grid-cols-3 gap-2 mt-2"></div>
+                        </label>
+                    </div>
+                    
+                    <button onclick="saveTradeNote()" class="w-full py-3 bg-emerald-600 hover:bg-emerald-700 rounded-2xl font-semibold flex items-center justify-center gap-x-2">
+                        <i class="fa-solid fa-save"></i>
+                        <span>儲存筆記</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+    document.body.insertAdjacentHTML('beforeend', html);
+}
+
+let noteImages = [];
+
+function previewNoteImages(input) {
+    const files = Array.from(input.files);
+    const preview = document.getElementById('note-image-preview');
+    const placeholder = document.getElementById('note-upload-placeholder');
+    
+    placeholder.classList.add('hidden');
+    preview.classList.remove('hidden');
+    preview.innerHTML = '';
+    
+    files.forEach(file => {
+        if (file.size > 5 * 1024 * 1024) {
+            alert(`圖片 ${file.name} 超過 5MB`);
+            return;
+        }
+        
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            noteImages.push(e.target.result);
+            const img = document.createElement('img');
+            img.src = e.target.result;
+            img.className = 'w-full h-20 object-cover rounded-xl border border-slate-600';
+            preview.appendChild(img);
+        };
+        reader.readAsDataURL(file);
+    });
+    
+    input.value = '';
+}
+
+async function saveTradeNote() {
+    const text = document.getElementById('note-text').value.trim();
+    if (!text) {
+        alert('請輸入筆記內容');
+        return;
+    }
+    
+    const noteData = {
+        text: text,
+        date: new Date().toISOString(),
+        images: noteImages.length > 0 ? noteImages : null,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    };
+    
+    try {
+        await db.collection('users').doc(currentUser.uid).collection('notes').add(noteData);
+        showToast('筆記已儲存');
+        document.querySelectorAll('.fixed').forEach(m => m.remove());
+        showTradeNotes();
+    } catch (error) {
+        alert('儲存失敗：' + error.message);
+    }
+}
+
+async function deleteTradeNote(index, event) {
+    event.stopImmediatePropagation();
+    if (!confirm('確定要刪除這則筆記嗎？')) return;
+    
+    const note = tradeNotes[index];
+    await db.collection('users').doc(currentUser.uid).collection('notes').doc(note.id).delete();
+    showToast('筆記已刪除');
+    document.querySelectorAll('.fixed').forEach(m => m.remove());
+    showTradeNotes();
+}
