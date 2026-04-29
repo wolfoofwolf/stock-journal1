@@ -1475,6 +1475,48 @@
             input.value = '';
         }
         
+        // 壓縮圖片函數
+        function compressImage(base64, maxSizeKB = 400) {
+            return new Promise((resolve) => {
+                const img = new Image();
+                img.onload = function() {
+                    const canvas = document.createElement('canvas');
+                    let width = img.width;
+                    let height = img.height;
+                    
+                    // Calculate new dimensions (max 1200px on longest side)
+                    const maxDimension = 1200;
+                    if (width > maxDimension || height > maxDimension) {
+                        if (width > height) {
+                            height = Math.round(height * (maxDimension / width));
+                            width = maxDimension;
+                        } else {
+                            width = Math.round(width * (maxDimension / height));
+                            height = maxDimension;
+                        }
+                    }
+                    
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+                    
+                    // Start with high quality and reduce until under limit
+                    let quality = 0.85;
+                    let compressed = canvas.toDataURL('image/jpeg', quality);
+                    
+                    // Reduce quality until under maxSizeKB
+                    while (compressed.length > maxSizeKB * 1024 && quality > 0.3) {
+                        quality -= 0.1;
+                        compressed = canvas.toDataURL('image/jpeg', quality);
+                    }
+                    
+                    resolve(compressed);
+                };
+                img.src = base64;
+            });
+        }
+        
         async function saveTradeNote() {
             const text = document.getElementById('note-text').value.trim();
             if (!text) {
@@ -1482,10 +1524,25 @@
                 return;
             }
             
+            // Compress images before saving (Firestore limit: ~1MB per document)
+            let compressedImages = null;
+            if (noteImages.length > 0) {
+                try {
+                    compressedImages = [];
+                    for (const img of noteImages) {
+                        const compressed = await compressImage(img, 350); // Max 350KB per image
+                        compressedImages.push(compressed);
+                    }
+                } catch (e) {
+                    alert('圖片壓縮失敗，請減少圖片數量或大小');
+                    return;
+                }
+            }
+            
             const noteData = {
                 text: text,
                 date: new Date().toISOString(),
-                images: noteImages.length > 0 ? noteImages : null,
+                images: compressedImages,
                 createdAt: firebase.firestore.FieldValue.serverTimestamp()
             };
             
@@ -1501,7 +1558,11 @@
                 // Refresh the trade notes list
                 showTradeNotes();
             } catch (error) {
-                alert('儲存失敗：' + error.message);
+                if (error.message.includes('longer than')) {
+                    alert('儲存失敗：圖片總大小超過限制，請減少圖片數量');
+                } else {
+                    alert('儲存失敗：' + error.message);
+                }
             }
         }
         
