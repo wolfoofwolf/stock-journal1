@@ -1508,7 +1508,10 @@
             const note = tradeNotes[index];
             await db.collection('users').doc(currentUser.uid).collection('notes').doc(note.id).delete();
             showToast('筆記已刪除');
-            document.querySelectorAll('.fixed').forEach(m => m.remove());
+            // Close only the current modal (trade notes list)
+            const currentModal = event.target.closest('.fixed');
+            if (currentModal) currentModal.remove();
+            // Refresh the trade notes list
             showTradeNotes();
         }
         
