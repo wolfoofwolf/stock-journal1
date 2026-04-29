@@ -1406,6 +1406,7 @@
         }
         
         function addNewTradeNote() {
+            noteImages = []; // Clear previous images
             const html = `
                 <div class="fixed inset-0 bg-black/80 z-[400] flex items-center justify-center p-4" onclick="this.remove()">
                     <div onclick="event.stopImmediatePropagation()" class="bg-slate-900 rounded-3xl w-full max-w-2xl p-6 border border-slate-700">
