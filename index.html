@@ -1052,7 +1052,10 @@
             
             let filteredTrades = trades;
             if (currentFilter !== 'all') {
-                filteredTrades = trades.filter(t => t.tradeType === currentFilter);
+                filteredTrades = trades.filter(t => {
+                    const types = Array.isArray(t.tradeType) ? t.tradeType : [t.tradeType];
+                    return types.includes(currentFilter);
+                });
             }
             
             tbody.innerHTML = '';
