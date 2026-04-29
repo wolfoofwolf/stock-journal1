@@ -1488,7 +1488,13 @@
             try {
                 await db.collection('users').doc(currentUser.uid).collection('notes').add(noteData);
                 showToast('筆記已儲存');
-                document.querySelectorAll('.fixed').forEach(m => m.remove());
+                // Close only the add note modal (current modal)
+                document.querySelectorAll('.fixed').forEach(m => {
+                    if (m.onclick && m.onclick.toString().includes('this.remove()')) {
+                        m.remove();
+                    }
+                });
+                // Refresh the trade notes list
                 showTradeNotes();
             } catch (error) {
                 alert('儲存失敗：' + error.message);
